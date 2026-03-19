@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fantazma Network</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --midnight-navy: #0A0A1A;
+      --patriot-crimson: #C41E3A;
+      --gold-crypto: #F7931A;
+      --star-white: #F0F0F0;
+      --border-subtle: #1a1a2e;
+      --font-display: 'Bebas Neue', Impact, sans-serif;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--midnight-navy);
+      color: var(--star-white);
+      min-height: 100vh;
+    }
+    
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: linear-gradient(180deg, var(--midnight-navy) 0%, rgba(10,10,26,0.95) 100%);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      z-index: 1000;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      text-decoration: none;
+    }
+    
+    .logo img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+    
+    .logo span {
+      font-family: var(--font-display);
+      font-size: 24px;
+      letter-spacing: 2px;
+      color: var(--star-white);
+    }
+    
+    .content {
+      padding-top: 84px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-left: 24px;
+      padding-right: 24px;
+      text-align: center;
+    }
+    
+    .hero {
+      padding: 64px 0;
+    }
+    
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: 64px;
+      letter-spacing: 4px;
+      margin-bottom: 16px;
+    }
+    
+    .crypto-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(247, 147, 26, 0.1);
+      border: 1px solid var(--gold-crypto);
+      color: var(--gold-crypto);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+    
+    .pricing {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 800px;
+      margin: 48px auto;
+    }
+    
+    .price-card {
+      background: rgba(26, 26, 46, 0.8);
+      border: 2px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 48px 32px;
+      transition: all 0.3s;
+    }
+    
+    .price-card:hover {
+      border-color: var(--gold-crypto);
+      transform: translateY(-4px);
+    }
+    
+    .price-card h3 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+    
+    .price {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--gold-crypto);
+    }
+    
+    .btn {
+      font-family: var(--font-display);
+      font-size: 16px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 24px;
+      background: linear-gradient(135deg, var(--gold-crypto), #ffaa33);
+      color: var(--midnight-navy);
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(247, 147, 26, 0.4);
+    }
+    
+    .chat {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      width: 350px;
+      height: 400px;
+      background: rgba(10, 10, 26, 0.95);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .chat-header {
+      background: var(--patriot-crimson);
+      padding: 16px;
+      font-family: var(--font-display);
+      border-radius: 16px 16px 0 0;
+    }
+    
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    
+    .chat-input {
+      display: flex;
+      padding: 16px;
+      gap: 12px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    
+    .chat-input input {
+      flex: 1;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--star-white);
+    }
+    
+    .chat-input button {
+      background: var(--patriot-crimson);
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      color: white;
+      font-family: var(--font-display);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a href="/" class="logo">
+      <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #F7931A, #ffaa33); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); color: #0A0A1A; font-size: 20px;">₿</div>
+      <span>FANTAZMA NETWORK</span>
+    </a>
+    <button onclick="logout()" style="background: transparent; border: 2px solid var(--border-subtle); color: var(--star-white); padding: 8px 20px; border-radius: 6px; cursor: pointer; font-family: var(--font-display);">Logout</button>
+  </header>
+
+  <main class="content">
+    <div class="hero">
+      <div class="crypto-badge">₿ CRYPTO-POWERED STREAMING</div>
+      <h1>WHERE VISION MEETS CINEMATIC EXCELLENCE</h1>
+      <p style="color: rgba(240,240,240,0.7); max-width: 600px; margin: 0 auto 32px;">Original content from Foster Entertainment Productions. Unfiltered. Unapologetic. Uniquely Maine.</p>
+    </div>
+    
+    <h2 style="font-family: var(--font-display); font-size: 32px; letter-spacing: 2px; margin-bottom: 24px;">UNLOCK FULL ACCESS</h2>
+    <p style="color: rgba(240,240,240,0.6); margin-bottom: 32px;">Pay with Bitcoin, Ethereum, or USDC</p>
+    
+    <div class="pricing">
+      <div class="price-card">
+        <h3>MONTHLY</h3>
+        <div class="price">$4.99<span style="font-size: 20px; color: rgba(240,240,240,0.6);">/mo</span></div>
+        <ul style="list-style: none; margin: 24px 0; text-align: left;">
+          <li style="padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">✓ All live channels</li>
+          <li style="padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">✓ Live chat access</li>
+          <li style="padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">✓ Archive content</li>
+        </ul>
+        <button class="btn" onclick="subscribe('monthly')">PAY WITH CRYPTO</button>
+      </div>
+      
+      <div class="price-card" style="border-color: var(--gold-crypto);">
+        <h3>YEARLY</h3>
+        <div class="price">$49.99<span style="font-size: 20px; color: rgba(240,240,240,0.6);">/yr</span></div>
+        <div style="background: var(--gold-crypto); color: var(--midnight-navy); padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 16px;">SAVE 17%</div>
+        <ul style="list-style: none; margin: 24px 0; text-align: left;">
+          <li style="padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">✓ All monthly features</li>
+          <li style="padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">✓ Priority support</li>
+          <li style="padding: 8px 0; border-bottom: 1px solid var(--border-subtle);">✓ Exclusive content</li>
+        </ul>
+        <button class="btn" onclick="subscribe('yearly')">PAY WITH CRYPTO</button>
+      </div>
+    </div>
+  </main>
+
+  <div class="chat">
+    <div class="chat-header">LIVE CHAT</div>
+    <div class="chat-messages" id="messages"></div>
+    <div class="chat-input">
+      <input type="text" id="msgInput" placeholder="Type message..." maxlength="200">
+      <button onclick="sendMsg()">SEND</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location = '/login.html';
+    
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const socket = io();
+    socket.emit('join-room', 'general');
+    
+    socket.on('receive-message', (data) => {
+      const div = document.getElementById('messages');
+      const msg = document.createElement('div');
+      msg.style.cssText = 'margin-bottom: 12px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 3px solid var(--patriot-crimson);';
+      msg.innerHTML = `<div style="font-weight: 600; color: #C41E3A; font-size: 12px;">${data.username}</div><div>${data.message}</div>`;
+      div.appendChild(msg);
+      div.scrollTop = div.scrollHeight;
+    });
+    
+    function sendMsg() {
+      const input = document.getElementById('msgInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+      socket.emit('send-message', { roomId: 'general', message: msg, username: payload.email.split('@')[0] });
+      input.value = '';
+    }
+    
+    async function subscribe(tier) {
+      const res = await fetch('/api/create-crypto-charge', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email: payload.email, tier })
+      });
+      const data = await res.json();
+      if (data.url) window.location = data.url;
+    }
+    
+    function logout() {
+      localStorage.removeItem('token');
+      window.location = '/login.html';
+    }
+    
+    document.getElementById('msgInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMsg();
+    });
+  </script>
+</body>
+            </html>
+  

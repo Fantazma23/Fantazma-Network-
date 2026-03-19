@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fantazma Network - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --midnight-navy: #0A0A1A;
+      --gold-crypto: #F7931A;
+      --star-white: #F0F0F0;
+      --font-display: 'Bebas Neue', Impact, sans-serif;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--midnight-navy);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: radial-gradient(ellipse at top, rgba(247,147,26,0.1) 0%, transparent 50%);
+    }
+    
+    .login-box {
+      background: rgba(26, 26, 46, 0.9);
+      border: 2px solid var(--gold-crypto);
+      border-radius: 20px;
+      padding: 48px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+    
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: linear-gradient(135deg, var(--gold-crypto), #ffaa33);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 32px;
+      color: var(--midnight-navy);
+    }
+    
+    h1 {
+      font-family: var(--font-display);
+      font-size: 32px;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+      color: var(--star-white);
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(247, 147, 26, 0.1);
+      border: 1px solid var(--gold-crypto);
+      color: var(--gold-crypto);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 32px;
+    }
+    
+    input {
+      width: 100%;
+      padding: 16px;
+      margin-bottom: 16px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid #1a1a2e;
+      border-radius: 10px;
+      color: var(--star-white);
+      font-size: 16px;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: var(--gold-crypto);
+    }
+    
+    button {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--gold-crypto), #ffaa33);
+      border: none;
+      border-radius: 10px;
+      color: var(--midnight-navy);
+      font-family: var(--font-display);
+      font-size: 18px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(247, 147, 26, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="logo">₿</div>
+    <h1>FANTAZMA NETWORK</h1>
+    <div class="badge">CRYPTO-POWERED</div>
+    
+    <input type="email" id="email" placeholder="Enter your email" required>
+    <button onclick="login()">ENTER NETWORK</button>
+  </div>
+
+  <script>
+    async function login() {
+      const email = document.getElementById('email').value;
+      if (!email.includes('@')) {
+        alert('Please enter valid email');
+        return;
+      }
+      
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email })
+      });
+      
+      const data = await res.json();
+      localStorage.setItem('token', data.token);
+      window.location = '/';
+    }
+  </script>
+</body>
+</html>

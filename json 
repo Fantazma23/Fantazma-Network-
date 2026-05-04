@@ -1,0 +1,83 @@
+{
+  "image_description": {
+    "subject": {
+      "gender": "male",
+      "age_range": "young adult",
+      "hair": {
+        "color": "dark brown/black",
+        "style": "{argument name='hair style' default='short, textured crop'}",
+        "texture": "natural waves/fade"
+      },
+      "face": {
+        "expression": "intense, smoldering",
+        "gaze": "directly at camera",
+        "features": "defined jawline, high cheekbones, well-groomed stubble"
+      },
+      "physique": "athletic, broad-shouldered"
+    },
+
+    "pose_and_composition": {
+      "body_position": "standing",
+      "posture": {
+        "torso": "upright, leaning slightly back",
+        "weight_distribution": "relaxed, one hand in pocket",
+        "hip_alignment": "square to camera"
+      },
+      "arms": {
+        "raised_arm": "one hand resting against a metal arch or architectural frame",
+        "lower_arm": "other hand partially tucked into blazer pocket"
+      },
+      "head": {
+        "tilt": "slight chin down",
+        "direction": "facing camera",
+        "gaze": "confident eye contact"
+      },
+      "camera_angle": {
+        "type": "external camera",
+        "position": "eye level",
+        "angle": "straight on",
+        "distance": "mid-shot framing",
+        "lens": "50mm prime"
+      },
+      "aspect_ratio": "4:5 vertical"
+    },
+
+    "attire": {
+      "outfit": {
+        "type": "modern evening wear",
+        "color": "{argument name='outfit color' default='midnight black'}",
+        "top": {
+          "style": "tailored slim-fit blazer over a crisp, unbuttoned shirt"
+        },
+        "bottom": {
+          "style": "matching dress trousers",
+          "fabric": "high-quality wool blend with a subtle sheen"
+        }
+      },
+      "accessories": {
+        "watch": "luxury steel timepiece",
+        "fragrance_bottle": "luxury glass bottle held or placed in the foreground (optional)"
+      }
+    },
+
+    "environment_and_lighting": {
+      "setting": "exclusive rooftop lounge at night",
+      "background": {
+        "neon_sign": "abstract glowing geometric shapes",
+        "greenery": "sleek urban planters",
+        "props": ["brushed metal structure", "city skyline bokeh"]
+      },
+      "lighting": {
+        "primary": "harsh direct flash (fashion editorial style)",
+        "secondary": "cool blue and warm amber ambient light",
+        "effect": "sharp shadows on the subject, vibrant background colors"
+      }
+    },
+
+    "technical_details": {
+      "style": "high-fashion commercial photography",
+      "resolution": "8k ultra-high definition",
+      "depth_of_field": "subject razor sharp, background beautifully blurred"
+    }
+  }
+}

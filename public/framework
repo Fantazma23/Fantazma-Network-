@@ -1,0 +1,325 @@
+import { useEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
+import { Link } from 'react-router-dom';
+import { 
+  Bitcoin, 
+  TrendingUp, 
+  TrendingDown, 
+  Wallet, 
+  Users, 
+  Activity,
+  ArrowUpRight,
+  ArrowDownRight,
+  Bell,
+  Settings,
+  LogOut,
+  Menu,
+  X
+} from 'lucide-react';
+import StockTicker from '../components/StockTicker';
+
+const Dashboard = () => {
+  const dashboardRef = useRef<HTMLDivElement>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // Mock data
+  const stats = [
+    { label: 'Total Balance', value: '$47,892.45', change: '+12.5%', up: true, icon: Wallet },
+    { label: 'Network Nodes', value: '2,847', change: '+8.2%', up: true, icon: Users },
+    { label: 'Active Transactions', value: '1,234', change: '-2.1%', up: false, icon: Activity },
+    { label: 'BTC Price', value: '$67,432.12', change: '+5.7%', up: true, icon: Bitcoin },
+  ];
+
+  const recentTransactions = [
+    { id: 1, type: 'received', amount: '+0.45 BTC', value: '$30,294.45', from: 'Network Reward', time: '2 min ago', status: 'confirmed' },
+    { id: 2, type: 'sent', amount: '-0.12 BTC', value: '$8,091.85', to: '0x7a8b...9c2d', time: '15 min ago', status: 'confirmed' },
+    { id: 3, type: 'received', amount: '+1.23 BTC', value: '$82,941.50', from: 'Staking Reward', time: '1 hour ago', status: 'confirmed' },
+    { id: 4, type: 'sent', amount: '-0.05 BTC', value: '$3,371.60', to: '0x3e4f...5a6b', time: '3 hours ago', status: 'confirmed' },
+  ];
+
+  const networkActivity = [
+    { time: '00:00', value: 4200 },
+    { time: '04:00', value: 3800 },
+    { time: '08:00', value: 5600 },
+    { time: '12:00', value: 7200 },
+    { time: '16:00', value: 6800 },
+    { time: '20:00', value: 8900 },
+    { time: '23:59', value: 6500 },
+  ];
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '.stat-card',
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power2.out', delay: 0.3 }
+      );
+
+      gsap.fromTo(
+        '.dashboard-content',
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.6 }
+      );
+    }, dashboardRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  const navItems = [
+    { id: 'overview', label: 'Overview', icon: Activity },
+    { id: 'wallet', label: 'Wallet', icon: Wallet },
+    { id: 'network', label: 'Network', icon: Users },
+    { id: 'settings', label: 'Settings', icon: Settings },
+  ];
+
+  return (
+    <div ref={dashboardRef} className="min-h-screen bg-[#050508] text-white">
+      {/* Sidebar */}
+      <aside 
+        className={`fixed left-0 top-0 h-full w-64 bg-[#0A0A0F] border-r border-white/5 z-40 transition-transform duration-300 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
+        <div className="p-6">
+          <Link to="/" className="flex items-center gap-3 mb-10">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#F7931A] to-[#FFAD33] flex items-center justify-center">
+              <Bitcoin className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="font-display text-lg">FANTAZMA</h1>
+              <p className="text-xs text-white/40 font-mono-custom">NETWORK</p>
+            </div>
+          </Link>
+
+          <nav className="space-y-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                    activeTab === item.id 
+                      ? 'bg-[#F7931A]/20 text-[#F7931A] border border-[#F7931A]/30' 
+                      : 'text-white/60 hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="font-mono-custom text-sm">{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-white/5">
+          <Link 
+            to="/login" 
+            className="flex items-center gap-3 px-4 py-3 text-white/60 hover:text-white transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="font-mono-custom text-sm">Sign Out</span>
+          </Link>
+        </div>
+      </aside>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Main Content */}
+      <main className="lg:ml-64 min-h-screen">
+        {/* Header */}
+        <header className="sticky top-0 z-20 bg-[#050508]/80 backdrop-blur-xl border-b border-white/5">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden p-2 rounded-lg bg-white/5 text-white/60"
+              >
+                {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+              <h2 className="text-xl font-display capitalize">{activeTab}</h2>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <button className="relative p-2 rounded-lg bg-white/5 text-white/60 hover:text-white transition-colors">
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-[#F7931A] rounded-full" />
+              </button>
+              <div className="flex items-center gap-3 pl-4 border-l border-white/10">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#F7931A]/30 to-[#FFAD33]/30 flex items-center justify-center border border-[#F7931A]/30">
+                  <span className="text-[#F7931A] font-bold">JD</span>
+                </div>
+                <div className="hidden sm:block">
+                  <p className="text-sm font-medium">John Doe</p>
+                  <p className="text-xs text-white/40 font-mono-custom">john@fantazma.io</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Dashboard Content */}
+        <div className="p-6 dashboard-content">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {stats.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <div 
+                  key={index} 
+                  className="stat-card bg-[#0A0A0F] rounded-2xl p-5 border border-white/5 hover:border-[#F7931A]/30 transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="p-2.5 rounded-xl bg-[#F7931A]/10">
+                      <Icon className="w-5 h-5 text-[#F7931A]" />
+                    </div>
+                    <div className={`flex items-center gap-1 text-xs font-mono-custom ${stat.up ? 'text-green-400' : 'text-red-400'}`}>
+                      {stat.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                      {stat.change}
+                    </div>
+                  </div>
+                  <p className="text-white/40 text-sm font-mono-custom mb-1">{stat.label}</p>
+                  <p className="text-2xl font-display">{stat.value}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Main Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Chart Section */}
+            <div className="lg:col-span-2 bg-[#0A0A0F] rounded-2xl p-6 border border-white/5">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-display text-lg">Network Activity</h3>
+                <div className="flex gap-2">
+                  {['1H', '24H', '7D', '30D'].map((period) => (
+                    <button 
+                      key={period}
+                      className={`px-3 py-1 text-xs font-mono-custom rounded-lg transition-colors ${
+                        period === '24H' 
+                          ? 'bg-[#F7931A] text-[#050508]' 
+                          : 'bg-white/5 text-white/60 hover:text-white'
+                      }`}
+                    >
+                      {period}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Simple Bar Chart */}
+              <div className="h-64 flex items-end justify-between gap-2">
+                {networkActivity.map((item, index) => (
+                  <div key={index} className="flex-1 flex flex-col items-center gap-2">
+                    <div 
+                      className="w-full bg-gradient-to-t from-[#F7931A] to-[#FFAD33] rounded-t-lg opacity-80 hover:opacity-100 transition-opacity"
+                      style={{ height: `${(item.value / 10000) * 100}%` }}
+                    />
+                    <span className="text-xs text-white/40 font-mono-custom">{item.time}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-[#0A0A0F] rounded-2xl p-6 border border-white/5">
+              <h3 className="font-display text-lg mb-6">Quick Actions</h3>
+              <div className="space-y-3">
+                <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-[#F7931A]/10 border border-white/5 hover:border-[#F7931A]/30 transition-all group">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-[#F7931A]/20 group-hover:bg-[#F7931A]/30 transition-colors">
+                      <ArrowDownRight className="w-4 h-4 text-[#F7931A]" />
+                    </div>
+                    <span className="font-mono-custom text-sm">Receive Crypto</span>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-white/40 group-hover:text-[#F7931A]" />
+                </button>
+                
+                <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-[#F7931A]/10 border border-white/5 hover:border-[#F7931A]/30 transition-all group">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-[#F7931A]/20 group-hover:bg-[#F7931A]/30 transition-colors">
+                      <ArrowUpRight className="w-4 h-4 text-[#F7931A]" />
+                    </div>
+                    <span className="font-mono-custom text-sm">Send Crypto</span>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-white/40 group-hover:text-[#F7931A]" />
+                </button>
+                
+                <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-[#F7931A]/10 border border-white/5 hover:border-[#F7931A]/30 transition-all group">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-[#F7931A]/20 group-hover:bg-[#F7931A]/30 transition-colors">
+                      <Users className="w-4 h-4 text-[#F7931A]" />
+                    </div>
+                    <span className="font-mono-custom text-sm">Invite Friends</span>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-white/40 group-hover:text-[#F7931A]" />
+                </button>
+                
+                <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-[#F7931A]/10 border border-white/5 hover:border-[#F7931A]/30 transition-all group">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-[#F7931A]/20 group-hover:bg-[#F7931A]/30 transition-colors">
+                      <TrendingUp className="w-4 h-4 text-[#F7931A]" />
+                    </div>
+                    <span className="font-mono-custom text-sm">Stake & Earn</span>
+                  </div>
+                  <ArrowUpRight className="w-4 h-4 text-white/40 group-hover:text-[#F7931A]" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Transactions */}
+          <div className="mt-6 bg-[#0A0A0F] rounded-2xl p-6 border border-white/5">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-display text-lg">Recent Transactions</h3>
+              <button className="text-sm text-[#F7931A] hover:text-[#FFAD33] font-mono-custom">View All</button>
+            </div>
+            
+            <div className="space-y-3">
+              {recentTransactions.map((tx) => (
+                <div 
+                  key={tx.id} 
+                  className="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/[0.08] transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-xl ${tx.type === 'received' ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+                      {tx.type === 'received' ? (
+                        <ArrowDownRight className={`w-5 h-5 ${tx.type === 'received' ? 'text-green-400' : 'text-red-400'}`} />
+                      ) : (
+                        <ArrowUpRight className="w-5 h-5 text-red-400" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium capitalize">{tx.type} BTC</p>
+                      <p className="text-sm text-white/40 font-mono-custom">
+                        {tx.type === 'received' ? `From: ${tx.from}` : `To: ${tx.to}`} • {tx.time}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`font-mono-custom font-medium ${tx.type === 'received' ? 'text-green-400' : 'text-red-400'}`}>
+                      {tx.amount}
+                    </p>
+                    <p className="text-sm text-white/40 font-mono-custom">{tx.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
+      
+      {/* Stock Ticker */}
+      <StockTicker position="bottom" />
+    </div>
+  );
+};
+
+export default Dashboard;

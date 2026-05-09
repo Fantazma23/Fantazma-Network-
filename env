@@ -1,0 +1,6 @@
+localStorage.setItem('fantazma_auth', 'true');
+localStorage.setItem('fantazma_session', JSON.stringify({
+    type: 'wallet',
+    data: { name: 'Demo User', address: '0x1234...5678', subscription: { type: 'monthly', status: 'active' }},
+    expires: Date.now() + 86400000
+}));

@@ -1,0 +1,482 @@
+@@ -0,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Fantazma Network ₿</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dashboard-page">
+    <div class="bg-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">
+                <i class="fas fa-ghost"></i>
+                <span>FANTAZMA</span>
+                <span class="btc-badge">₿</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <span class="nav-label">Main</span>
+                <a href="#" class="nav-item active" data-section="live">
+                    <i class="fas fa-play-circle"></i>
+                    <span>Live Stream</span>
+                    <span class="live-badge">LIVE</span>
+                </a>
+                <a href="#" class="nav-item" data-section="guide">
+                    <i class="fas fa-tv"></i>
+                    <span>TV Guide</span>
+                </a>
+                <a href="#" class="nav-item" data-section="library">
+                    <i class="fas fa-film"></i>
+                    <span>Content Library</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <span class="nav-label">Account</span>
+                <a href="#" class="nav-item" data-section="subscription">
+                    <i class="fas fa-crown"></i>
+                    <span>Subscription</span>
+                </a>
+                <a href="#" class="nav-item" data-section="wallet">
+                    <i class="fas fa-wallet"></i>
+                    <span>Crypto Wallet</span>
+                </a>
+                <a href="#" class="nav-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-card">
+                <div class="user-avatar" id="userAvatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <span class="user-name" id="userName">Loading...</span>
+                    <span class="user-status" id="userStatus">Member</span>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Disconnect</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <h1 id="pageTitle">Live Stream</h1>
+                <div class="breadcrumb">
+                    <span>Dashboard</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span id="breadcrumbCurrent">Live</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="crypto-ticker">
+                    <span class="ticker-item">
+                        <i class="fab fa-bitcoin"></i>
+                        <span class="ticker-value" id="btcPrice">$64,230</span>
+                        <span class="ticker-change positive">+2.4%</span>
+                    </span>
+                    <span class="ticker-item">
+                        <i class="fab fa-ethereum"></i>
+                        <span class="ticker-value" id="ethPrice">$3,450</span>
+                        <span class="ticker-change positive">+1.8%</span>
+                    </span>
+                </div>
+                <button class="notification-btn" id="notificationBtn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notifBadge">0</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+
+            <!-- LIVE STREAM SECTION -->
+            <section class="content-section active" id="section-live">
+                <div class="stream-layout">
+                    <div class="video-section">
+                        <div class="video-container" id="videoContainer">
+                            <video id="livePlayer" class="video-player-element" poster="">
+                                <source src="" type="application/x-mpegURL">
+                            </video>
+
+                            <div class="stream-overlay" id="streamOverlay">
+                                <div class="overlay-top">
+                                    <div class="stream-status-badge live">
+                                        <span class="pulse-dot"></span>
+                                        LIVE
+                                    </div>
+                                    <div class="stream-viewers">
+                                        <i class="fas fa-eye"></i>
+                                        <span id="viewerCount">0</span>
+                                    </div>
+                                </div>
+
+                                <div class="overlay-center" id="playOverlay">
+                                    <button class="play-button" id="playBtn">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <p>Click to start watching</p>
+                                </div>
+
+                                <div class="overlay-bottom">
+                                    <div class="stream-info">
+                                        <h3 id="streamTitle">Select a channel</h3>
+                                        <p id="streamDescription">Choose from available channels below</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="video-loading" id="videoLoading">
+                                <div class="spinner-ring"></div>
+                                <p>Connecting to stream...</p>
+                            </div>
+                        </div>
+
+                        <div class="player-controls-bar">
+                            <div class="controls-left">
+                                <button class="control-btn" id="playPauseBtn"><i class="fas fa-play"></i></button>
+                                <div class="volume-control">
+                                    <button class="control-btn" id="muteBtn"><i class="fas fa-volume-up"></i></button>
+                                    <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="80">
+                                </div>
+                                <span class="time-display" id="timeDisplay">00:00 / 00:00</span>
+                            </div>
+                            <div class="controls-center">
+                                <div class="progress-bar" id="progressBar">
+                                    <div class="progress-fill" id="progressFill"></div>
+                                    <div class="progress-handle" id="progressHandle"></div>
+                                </div>
+                            </div>
+                            <div class="controls-right">
+                                <button class="control-btn" id="settingsBtn"><i class="fas fa-cog"></i></button>
+                                <button class="control-btn" id="fullscreenBtn"><i class="fas fa-expand"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="channel-selector">
+                            <h4><i class="fas fa-broadcast-tower"></i> Available Channels</h4>
+                            <div class="channel-tabs" id="channelTabs">
+                                <!-- Dynamically populated -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-section">
+                        <div class="chat-panel">
+                            <div class="chat-header">
+                                <h3><i class="fas fa-comments"></i> Live Chat</h3>
+                                <span class="chat-count" id="chatCount">0 online</span>
+                            </div>
+                            <div class="chat-messages" id="chatMessages">
+                                <div class="chat-welcome">
+                                    <i class="fas fa-hand-sparkles"></i>
+                                    <p>Welcome to the chat! Connect to a channel to join the conversation.</p>
+                                </div>
+                            </div>
+                            <div class="chat-input-area">
+                                <div class="chat-tools">
+                                    <button class="tool-btn" title="Tip Streamer" id="tipBtn"><i class="fas fa-gem"></i></button>
+                                </div>
+                                <div class="chat-input-wrapper">
+                                    <input type="text" placeholder="Type a message..." id="chatInput" maxlength="500">
+                                    <button class="chat-send" id="sendMessage">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TV GUIDE SECTION -->
+            <section class="content-section" id="section-guide">
+                <div class="guide-header">
+                    <h2><i class="fas fa-tv"></i> Programming Guide</h2>
+                    <div class="guide-controls">
+                        <button class="guide-btn active" id="btnToday">Today</button>
+                        <button class="guide-btn" id="btnWeek">This Week</button>
+                        <div class="date-picker">
+                            <input type="date" id="guideDate" value="">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="period-tabs">
+                    <button class="period-tab active" data-period="all">All Day</button>
+                    <button class="period-tab" data-period="morning">Morning (6AM-12PM)</button>
+                    <button class="period-tab" data-period="afternoon">Afternoon (12PM-6PM)</button>
+                    <button class="period-tab" data-period="evening">Evening (6PM-12AM)</button>
+                    <button class="period-tab" data-period="latenight">Late Night (12AM-6AM)</button>
+                </div>
+
+                <div class="program-grid" id="programGrid">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <div class="weekly-overview" id="weeklyOverview" style="display: none;">
+                    <h3><i class="fas fa-calendar-week"></i> Weekly Schedule</h3>
+                    <div class="week-grid" id="weekGrid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- CONTENT LIBRARY SECTION -->
+            <section class="content-section" id="section-library">
+                <div class="library-header">
+                    <h2><i class="fas fa-film"></i> Content Library</h2>
+                    <div class="library-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Search content..." id="librarySearch">
+                        </div>
+                        <div class="filter-group">
+                            <select id="categoryFilter">
+                                <option value="all">All Categories</option>
+                                <option value="episode">Episodes</option>
+                                <option value="clip">Clips</option>
+                                <option value="highlight">Highlights</option>
+                                <option value="bonus">Bonus Content</option>
+                            </select>
+                            <select id="sortFilter">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                                <option value="popular">Most Popular</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-grid" id="contentGrid">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <div class="pagination" id="pagination">
+                    <!-- Pagination controls -->
+                </div>
+            </section>
+
+            <!-- SUBSCRIPTION SECTION -->
+            <section class="content-section" id="section-subscription">
+                <div class="subscription-container">
+                    <div class="current-plan">
+                        <div class="plan-header">
+                            <h2><i class="fas fa-crown"></i> Current Plan</h2>
+                            <span class="plan-badge" id="planBadge">Free</span>
+                        </div>
+                        <div class="plan-details" id="planDetails">
+                            <div class="plan-price">
+                                <span class="price-amount" id="planPrice">$0.00</span>
+                                <span class="price-period">/month</span>
+                            </div>
+                            <div class="plan-features" id="planFeatures">
+                                <div class="feature-item locked">
+                                    <i class="fas fa-lock"></i>
+                                    <span>Upgrade to unlock all features</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="upgrade-section">
+                        <h3>Choose Your Plan</h3>
+                        <div class="plan-cards">
+                            <div class="plan-card monthly">
+                                <div class="plan-icon">
+                                    <i class="fas fa-calendar"></i>
+                                </div>
+                                <h4>Monthly</h4>
+                                <div class="plan-price-tag">
+                                    <span class="price">$4.99</span>
+                                    <span class="period">/month</span>
+                                </div>
+                                <ul class="plan-features-list">
+                                    <li><i class="fas fa-check"></i> All live channels</li>
+                                    <li><i class="fas fa-check"></i> Live chat access</li>
+                                    <li><i class="fas fa-check"></i> Archive content</li>
+                                    <li><i class="fas fa-check"></i> Priority support</li>
+                                </ul>
+                                <div class="payment-options">
+                                    <button class="pay-btn crypto" onclick="initiatePayment('monthly', 'crypto')">
+                                        <i class="fab fa-ethereum"></i>
+                                        Pay with Crypto
+                                        <span class="fee-tag">ZERO FEE</span>
+                                    </button>
+                                    <button class="pay-btn card" onclick="initiatePayment('monthly', 'card')">
+                                        <i class="fas fa-credit-card"></i>
+                                        Pay with Card
+                                        <span class="fee-tag">+$1.89 fee</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="plan-card yearly featured">
+                                <div class="plan-badge-best">BEST VALUE</div>
+                                <div class="plan-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <h4>Yearly</h4>
+                                <div class="plan-price-tag">
+                                    <span class="price">$49.99</span>
+                                    <span class="period">/year</span>
+                                </div>
+                                <div class="savings-badge">SAVE 17%</div>
+                                <ul class="plan-features-list">
+                                    <li><i class="fas fa-check"></i> All monthly features</li>
+                                    <li><i class="fas fa-check"></i> Exclusive content</li>
+                                    <li><i class="fas fa-check"></i> Early access</li>
+                                    <li><i class="fas fa-check"></i> Premium badge</li>
+                                    <li><i class="fas fa-check"></i> No ads</li>
+                                </ul>
+                                <div class="payment-options">
+                                    <button class="pay-btn crypto" onclick="initiatePayment('yearly', 'crypto')">
+                                        <i class="fab fa-ethereum"></i>
+                                        Pay with Crypto
+                                        <span class="fee-tag">ZERO FEE</span>
+                                    </button>
+                                    <button class="pay-btn card" onclick="initiatePayment('yearly', 'card')">
+                                        <i class="fas fa-credit-card"></i>
+                                        Pay with Card
+                                        <span class="fee-tag">+$1.89 fee</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WALLET SECTION -->
+            <section class="content-section" id="section-wallet">
+                <div class="wallet-container">
+                    <div class="wallet-card">
+                        <div class="wallet-header">
+                            <h2><i class="fas fa-wallet"></i> Connected Wallet</h2>
+                            <span class="wallet-network" id="walletNetwork">Ethereum Mainnet</span>
+                        </div>
+                        <div class="wallet-address">
+                            <span class="address-label">Address</span>
+                            <div class="address-value">
+                                <span id="walletAddress">Not connected</span>
+                                <button class="copy-btn" onclick="copyAddress()">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="wallet-balances" id="walletBalances">
+                            <div class="balance-item">
+                                <i class="fab fa-ethereum"></i>
+                                <div class="balance-info">
+                                    <span class="balance-label">ETH Balance</span>
+                                    <span class="balance-value" id="ethBalance">--</span>
+                                </div>
+                                <span class="balance-usd" id="ethUsd">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="transaction-history">
+                        <h3><i class="fas fa-history"></i> Transaction History</h3>
+                        <div class="transaction-list" id="transactionList">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS SECTION -->
+            <section class="content-section" id="section-settings">
+                <div class="settings-container">
+                    <h2><i class="fas fa-cog"></i> Account Settings</h2>
+
+                    <div class="settings-group">
+                        <h3>Profile</h3>
+                        <div class="setting-item">
+                            <label>Display Name</label>
+                            <input type="text" id="settingName" placeholder="Your name">
+                        </div>
+                        <div class="setting-item">
+                            <label>Email</label>
+                            <input type="email" id="settingEmail" placeholder="your@email.com">
+                        </div>
+                        <div class="setting-item">
+                            <label>Bio</label>
+                            <textarea id="settingBio" placeholder="Tell us about yourself..." maxlength="500"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Preferences</h3>
+                        <div class="setting-item toggle">
+                            <label>Email Notifications</label>
+                            <label class="switch">
+                                <input type="checkbox" id="notifEmail" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item toggle">
+                            <label>Stream Reminders</label>
+                            <label class="switch">
+                                <input type="checkbox" id="notifReminders" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="save-settings-btn" onclick="saveSettings()">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Payment Modal -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content payment-modal">
+            <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+            <div id="paymentContent"></div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+        </div>
+        <p class="loading-text">Processing...</p>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

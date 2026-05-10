@@ -8,6 +8,76 @@
     <link rel="stylesheet" href="css/dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .commit-tracker {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .commit-tracker h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .commit-item-tracker {
+            background: rgba(0, 0, 0, 0.2);
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .commit-info {
+            flex: 1;
+        }
+        .commit-title-tracker {
+            color: white;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .commit-meta {
+            font-size: 0.85em;
+            color: #999;
+        }
+        .commit-stats {
+            display: flex;
+            gap: 15px;
+            margin-right: 15px;
+        }
+        .stat-badge {
+            background: rgba(102, 126, 234, 0.2);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        .stat-added {
+            color: #28a745;
+        }
+        .stat-deleted {
+            color: #dc3545;
+        }
+        .commit-link-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s ease;
+        }
+        .commit-link-btn:hover {
+            background: #764ba2;
+        }
+    </style>
 </head>
 <body class="dashboard-page">
     <div class="bg-animation">
@@ -111,6 +181,26 @@
         </header>
 
         <div class="content-wrapper">
+
+            <!-- COMMIT TRACKER SECTION -->
+            <div class="commit-tracker">
+                <h3><i class="fas fa-code-branch"></i> Recent Commits</h3>
+                <div class="commit-item-tracker">
+                    <div class="commit-info">
+                        <div class="commit-title-tracker">home.html</div>
+                        <div class="commit-meta">
+                            👤 Fantazma23 • 2026-05-10
+                        </div>
+                    </div>
+                    <div class="commit-stats">
+                        <span class="stat-badge stat-added">✅ +7 additions</span>
+                        <span class="stat-badge stat-deleted">❌ -0 deletions</span>
+                    </div>
+                    <a href="https://github.com/Fantazma23/Fantazma-Network-/commit/3bdf114a8b6b8ae5797e85ac5de31ba8e5a3bc34" class="commit-link-btn" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> View
+                    </a>
+                </div>
+            </div>
 
             <!-- LIVE STREAM SECTION -->
             <section class="content-section active" id="section-live">

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Fantazma Network ₿</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/commit-tracker.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Inline fallback styles - will be overridden by external CSS */
+        .commit-tracker {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .commit-tracker h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .commit-item-tracker {
+            background: rgba(0, 0, 0, 0.2);
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .commit-info { flex: 1; }
+        .commit-title-tracker {
+            color: white;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .commit-meta {
+            font-size: 0.85em;
+            color: #999;
+        }
+        .commit-stats {
+            display: flex;
+            gap: 15px;
+            margin-right: 15px;
+        }
+        .stat-badge {
+            background: rgba(102, 126, 234, 0.2);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        .stat-added { color: #28a745; }
+        .stat-deleted { color: #dc3545; }
+        .commit-link-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s ease;
+        }
+        .commit-link-btn:hover { background: #764ba2; }
+    </style>
+</head>
+<body class="dashboard-page">
+    <div class="bg-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">
+                <i class="fas fa-ghost"></i>
+                <span>FANTAZMA</span>
+                <span class="btc-badge">₿</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <span class="nav-label">Main</span>
+                <a href="#" class="nav-item active" data-section="live">
+                    <i class="fas fa-play-circle"></i>
+                    <span>Live Stream</span>
+                    <span class="live-badge">LIVE</span>
+                </a>
+                <a href="#" class="nav-item" data-section="guide">
+                    <i class="fas fa-tv"></i>
+                    <span>TV Guide</span>
+                </a>
+                <a href="#" class="nav-item" data-section="library">
+                    <i class="fas fa-film"></i>
+                    <span>Content Library</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <span class="nav-label">Account</span>
+                <a href="#" class="nav-item" data-section="subscription">
+                    <i class="fas fa-crown"></i>
+                    <span>Subscription</span>
+                </a>
+                <a href="#" class="nav-item" data-section="wallet">
+                    <i class="fas fa-wallet"></i>
+                    <span>Crypto Wallet</span>
+                </a>
+                <a href="#" class="nav-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-mini">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <span class="user-name" id="userName">Loading...</span>
+                    <span class="user-plan" id="userPlan">Free Plan</span>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <h1 class="page-title" id="pageTitle">Live Stream</h1>
+                <div class="breadcrumb">
+                    <span>Dashboard</span>
+                    <i class="fas fa-chevron-right"></i>
+                    <span id="breadcrumbCurrent">Live</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="crypto-ticker-mini" id="cryptoTicker">
+                    <span class="ticker-item"><i class="fab fa-bitcoin"></i> BTC: <span id="btcPrice">--</span></span>
+                    <span class="ticker-item"><i class="fab fa-ethereum"></i> ETH: <span id="ethPrice">--</span></span>
+                    <span class="ticker-item"><i class="fas fa-coins"></i> AOC: <span id="aocPrice">--</span></span>
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn" id="notifBtn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notif-badge">3</span>
+                    </button>
+                    <button class="action-btn" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Sections -->
+        <div class="content-wrapper">
+
+            <!-- LIVE STREAM SECTION -->
+            <section class="content-section active" id="section-live">
+                <div class="stream-container">
+                    <div class="stream-player-wrapper">
+                        <div class="stream-player" id="streamPlayer">
+                            <div class="player-overlay">
+                                <div class="play-button" id="playButton">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                                <div class="stream-info">
+                                    <h3>The Writing Room</h3>
+                                    <p>Live scriptwriting with David J. Foster</p>
+                                    <span class="live-indicator">
+                                        <span class="pulse"></span>
+                                        LIVE NOW
+                                    </span>
+                                </div>
+                            </div>
+                            <video id="videoPlayer" poster="assets/stream-poster.jpg">
+                                <source src="" type="application/x-mpegURL">
+                            </video>
+                        </div>
+                        <div class="player-controls">
+                            <div class="controls-left">
+                                <button class="control-btn" id="playPauseBtn"><i class="fas fa-play"></i></button>
+                                <button class="control-btn" id="muteBtn"><i class="fas fa-volume-up"></i></button>
+                                <div class="volume-slider">
+                                    <input type="range" min="0" max="100" value="80" id="volumeSlider">
+                                </div>
+                                <span class="time-display" id="timeDisplay">00:00 / 00:00</span>
+                            </div>
+                            <div class="controls-right">
+                                <button class="control-btn" id="qualityBtn">HD</button>
+                                <button class="control-btn" id="fullscreenBtn"><i class="fas fa-expand"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stream-sidebar">
+                        <div class="chat-container">
+                            <div class="chat-header">
+                                <h3><i class="fas fa-comments"></i> Live Chat</h3>
+                                <span class="viewer-count"><i class="fas fa-eye"></i> <span id="viewerCount">1,247</span></span>
+                            </div>
+                            <div class="chat-messages" id="chatMessages">
+                                <!-- Messages populated by JS -->
+                            </div>
+                            <div class="chat-input-area">
+                                <input type="text" id="chatInput" placeholder="Say something..." maxlength="500">
+                                <button class="send-btn" id="sendChatBtn"><i class="fas fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Commit Tracker -->
+                <div class="commit-tracker">
+                    <h3><i class="fas fa-code-branch"></i> Recent Commits</h3>
+                    <div id="commitList">
+                        <!-- Dynamically populated by commit-tracker.js -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TV GUIDE SECTION -->
+            <section class="content-section" id="section-guide">
+                <div class="guide-header">
+                    <h2>Programming Schedule</h2>
+                    <div class="guide-filters">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="weekday">Weekday</button>
+                        <button class="filter-btn" data-filter="weekend">Weekend</button>
+                    </div>
+                </div>
+                <div class="guide-grid" id="guideGrid">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- CONTENT LIBRARY SECTION -->
+            <section class="content-section" id="section-library">
+                <div class="library-header">
+                    <h2>Content Library</h2>
+                    <div class="library-filters">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="librarySearch" placeholder="Search content...">
+                        </div>
+                        <select id="libraryCategory">
+                            <option value="all">All Categories</option>
+                            <option value="scriptwriting">Scriptwriting</option>
+                            <option value="documentary">Documentary</option>
+                            <option value="education">Education</option>
+                            <option value="commentary">Commentary</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="content-grid" id="contentGrid">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- SUBSCRIPTION SECTION -->
+            <section class="content-section" id="section-subscription">
+                <div class="subscription-header">
+                    <h2>Choose Your Plan</h2>
+                    <p>Unlock premium content and features</p>
+                </div>
+                <div class="plans-container">
+                    <div class="plan-card">
+                        <div class="plan-badge">Monthly</div>
+                        <div class="plan-price">$4.99<span>/mo</span></div>
+                        <ul class="plan-features">
+                            <li><i class="fas fa-check"></i> All live channels</li>
+                            <li><i class="fas fa-check"></i> Live chat access</li>
+                            <li><i class="fas fa-check"></i> Archive content</li>
+                            <li><i class="fas fa-check"></i> HD streaming</li>
+                        </ul>
+                        <button class="plan-btn" onclick="subscribe('monthly')">Subscribe with Crypto</button>
+                        <div class="fee-notice">
+                            <i class="fas fa-credit-card"></i> Card: +$1.89 fee
+                        </div>
+                    </div>
+                    <div class="plan-card featured">
+                        <div class="plan-badge popular">BEST VALUE</div>
+                        <div class="plan-badge">Yearly</div>
+                        <div class="plan-price">$49.99<span>/yr</span></div>
+                        <ul class="plan-features">
+                            <li><i class="fas fa-check"></i> All monthly features</li>
+                            <li><i class="fas fa-check"></i> Priority support</li>
+                            <li><i class="fas fa-check"></i> Exclusive content</li>
+                            <li><i class="fas fa-check"></i> Early access</li>
+                            <li><i class="fas fa-check"></i> Download option</li>
+                        </ul>
+                        <button class="plan-btn featured-btn" onclick="subscribe('yearly')">Subscribe with Crypto</button>
+                        <div class="fee-notice">
+                            <i class="fas fa-credit-card"></i> Card: +$1.89 fee
+                        </div>
+                    </div>
+                    <div class="plan-card">
+                        <div class="plan-badge">Lifetime</div>
+                        <div class="plan-price">$199<span>one-time</span></div>
+                        <ul class="plan-features">
+                            <li><i class="fas fa-check"></i> Everything forever</li>
+                            <li><i class="fas fa-check"></i> All future content</li>
+                            <li><i class="fas fa-check"></i> VIP Discord access</li>
+                            <li><i class="fas fa-check"></i> Producer credits</li>
+                            <li><i class="fas fa-check"></i> NFT membership card</li>
+                        </ul>
+                        <button class="plan-btn" onclick="subscribe('lifetime')">Subscribe with Crypto</button>
+                        <div class="fee-notice">
+                            <i class="fas fa-credit-card"></i> Card: +$1.89 fee
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WALLET SECTION -->
+            <section class="content-section" id="section-wallet">
+                <div class="wallet-container">
+                    <div class="wallet-card">
+                        <div class="wallet-header">
+                            <i class="fas fa-wallet"></i>
+                            <h2>Crypto Wallet</h2>
+                        </div>
+                        <div class="wallet-address" id="walletAddress">
+                            <span>Not connected</span>
+                            <button class="connect-wallet-btn" onclick="connectWallet()">
+                                <i class="fas fa-link"></i> Connect MetaMask
+                            </button>
+                        </div>
+                        <div class="wallet-balances" id="walletBalances">
+                            <div class="balance-item">
+                                <span class="balance-label">ETH Balance</span>
+                                <span class="balance-value" id="ethBalance">--</span>
+                            </div>
+                            <div class="balance-item">
+                                <span class="balance-label">AOC Balance</span>
+                                <span class="balance-value" id="aocBalance">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wallet-transactions">
+                        <h3>Recent Transactions</h3>
+                        <div class="transaction-list" id="transactionList">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS SECTION -->
+            <section class="content-section" id="section-settings">
+                <div class="settings-container">
+                    <div class="settings-header">
+                        <h2>Account Settings</h2>
+                        <p>Manage your profile and preferences</p>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Profile Information</h3>
+                        <div class="setting-item">
+                            <label>Display Name</label>
+                            <input type="text" id="settingName" placeholder="Your name">
+                        </div>
+                        <div class="setting-item">
+                            <label>Email</label>
+                            <input type="email" id="settingEmail" placeholder="your@email.com">
+                        </div>
+                        <div class="setting-item">
+                            <label>Bio</label>
+                            <textarea id="settingBio" placeholder="Tell us about yourself..." maxlength="500"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Preferences</h3>
+                        <div class="setting-item toggle">
+                            <label>Email Notifications</label>
+                            <label class="switch">
+                                <input type="checkbox" id="notifEmail" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item toggle">
+                            <label>Stream Reminders</label>
+                            <label class="switch">
+                                <input type="checkbox" id="notifReminders" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item toggle">
+                            <label>Dark Mode</label>
+                            <label class="switch">
+                                <input type="checkbox" id="darkMode" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="save-settings-btn" onclick="saveSettings()">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Payment Modal -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content payment-modal">
+            <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+            <div id="paymentContent"></div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+            <div class="spinner-ring"></div>
+        </div>
+        <p class="loading-text">Processing...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/commit-tracker.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

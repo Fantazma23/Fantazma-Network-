@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantazma Network - Login</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .bg-animation {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #1a0033 0%, #0a0a0a 50%, #001a33 100%);
+            z-index: -2;
+        }
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 0, 255, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(0, 200, 255, 0.1) 0%, transparent 50%);
+            animation: bgPulse 8s ease-in-out infinite;
+        }
+        @keyframes bgPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        .particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            width: 4px; height: 4px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .login-card {
+            background: rgba(20, 20, 30, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(120, 0, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, #7800ff, #00c8ff, #7800ff);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .login-card:hover::before {
+            opacity: 0.3;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo h1 {
+            font-size: 2.2em;
+            background: linear-gradient(135deg, #fff 0%, #a855f7 50%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        .logo p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #a855f7;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
+        }
+        .wallet-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .wallet-btn {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .wallet-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #a855f7;
+            transform: translateY(-1px);
+        }
+        .wallet-btn .icon {
+            font-size: 1.3em;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(168, 85, 247, 0.3);
+            border-top-color: #a855f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .error-msg {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            display: none;
+        }
+        .error-msg.show {
+            display: block;
+        }
+        .success-msg {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #86efac;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            display: none;
+        }
+        .success-msg.show {
+            display: block;
+        }
+        .demo-notice {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        .demo-notice p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8em;
+            line-height: 1.5;
+        }
+        .demo-notice .highlight {
+            color: #a855f7;
+            font-weight: 600;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85em;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .divider span {
+            padding: 0 15px;
+        }
+        @media (max-width: 480px) {
+            .login-card { padding: 25px; }
+            .logo h1 { font-size: 1.8em; }
+            .wallet-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+    <div class="bg-animation"></div>
+    <div class="particles" id="particles"></div>
+    <div class="container">
+        <div class="login-card">
+            <div class="logo">
+                <h1>FANTAZMA</h1>
+                <p>Network Login Portal</p>
+            </div>
+            <div class="error-msg" id="errorMsg"></div>
+            <div class="success-msg" id="successMsg"></div>
+            <form id="loginForm" novalidate>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" id="signInBtn">
+                    <span id="signInText">Sign In</span>
+                </button>
+            </form>
+            <div class="divider"><span>OR</span></div>
+            <div class="wallet-grid">
+                <button class="wallet-btn" id="btnMetaMask" type="button">
+                    <span class="icon">&#129418;</span> MetaMask
+                </button>
+                <button class="wallet-btn" id="btnWalletConnect" type="button">
+                    <span class="icon">&#128279;</span> WalletConnect
+                </button>
+                <button class="wallet-btn" id="btnCoinbase" type="button">
+                    <span class="icon">&#9409;</span> Coinbase
+                </button>
+                <button class="wallet-btn" id="btnPhantom" type="button">
+                    <span class="icon">&#128123;</span> Phantom
+                </button>
+            </div>
+            <div class="demo-notice">
+                <p>&#127909; <span class="highlight">Demo Mode Active</span><br>
+                Wallet buttons work without extension.<br>
+                Any email/password combination accepted.</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function() {
+            'use strict';
+            var CONFIG = {
+                demoMode: true,
+                redirectUrl: '/dashboard.html',
+                sessionDuration: 86400000
+            };
+            var state = { isLoading: false, currentUser: null };
+            var dom = {};
+            function getEl(id) { return document.getElementById(id); }
+            function showError(msg) {
+                var el = dom.errorMsg;
+                if (el) { el.textContent = msg; el.classList.add('show'); setTimeout(function() { el.classList.remove('show'); }, 5000); }
+            }
+            function showSuccess(msg) {
+                var el = dom.successMsg;
+                if (el) { el.textContent = msg; el.classList.add('show'); setTimeout(function() { el.classList.remove('show'); }, 3000); }
+            }
+            function setLoading(loading) {
+                state.isLoading = loading;
+                var btn = dom.signInBtn;
+                var text = dom.signInText;
+                if (btn) btn.disabled = loading;
+                if (text) text.textContent = loading ? 'Loading...' : 'Sign In';
+            }
+            function hideLoadingOverlay() {
+                var overlay = dom.loadingOverlay;
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                    setTimeout(function() { overlay.style.display = 'none'; }, 500);
+                }
+            }
+            function createSession(userData) {
+                try {
+                    var session = {
+                        type: userData.type || 'email',
+                        data: userData,
+                        expires: Date.now() + CONFIG.sessionDuration
+                    };
+                    localStorage.setItem('fantazma_auth', 'true');
+                    localStorage.setItem('fantazma_session', JSON.stringify(session));
+                    return true;
+                } catch (e) {
+                    console.error('Session creation failed:', e);
+                    return false;
+                }
+            }
+            function redirectToDashboard() {
+                showSuccess('Login successful! Redirecting...');
+                setTimeout(function() { window.location.href = CONFIG.redirectUrl; }, 800);
+            }
+            function connectWallet(walletType) {
+                if (state.isLoading) return;
+                setLoading(true);
+                setTimeout(function() {
+                    var demoAddresses = {
+                        'metamask': '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+                        'walletconnect': '0x8ba1f109551bD432803012645Hac136c82C3e5C7',
+                        'coinbase': '0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE',
+                        'phantom': '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
+                    };
+                    var userData = {
+                        type: 'wallet',
+                        walletType: walletType,
+                        name: walletType.charAt(0).toUpperCase() + walletType.slice(1) + ' User',
+                        address: demoAddresses[walletType] || '0x1234...5678',
+                        subscription: { type: 'monthly', status: 'active', expires: Date.now() + 2592000000 }
+                    };
+                    if (createSession(userData)) {
+                        redirectToDashboard();
+                    } else {
+                        showError('Failed to create session. Please try again.');
+                        setLoading(false);
+                    }
+                }, 1500);
+            }
+            function handleEmailLogin(e) {
+                e.preventDefault();
+                if (state.isLoading) return;
+                var email = dom.email ? dom.email.value.trim() : '';
+                var password = dom.password ? dom.password.value : '';
+                if (!email) { showError('Please enter your email address.'); return; }
+                if (!password) { showError('Please enter your password.'); return; }
+                setLoading(true);
+                setTimeout(function() {
+                    var userData = {
+                        type: 'email',
+                        email: email,
+                        name: email.split('@')[0] || 'User',
+                        subscription: { type: 'monthly', status: 'active', expires: Date.now() + 2592000000 }
+                    };
+                    if (createSession(userData)) {
+                        redirectToDashboard();
+                    } else {
+                        showError('Login failed. Please try again.');
+                        setLoading(false);
+                    }
+                }, 1000);
+            }
+            function createParticles() {
+                var container = dom.particles;
+                if (!container) return;
+                var particleCount = 25;
+                for (var i = 0; i < particleCount; i++) {
+                    var particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 15 + 's';
+                    particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                    particle.style.width = (2 + Math.random() * 4) + 'px';
+                    particle.style.height = particle.style.width;
+                    container.appendChild(particle);
+                }
+            }
+            function checkExistingSession() {
+                try {
+                    var auth = localStorage.getItem('fantazma_auth');
+                    var sessionStr = localStorage.getItem('fantazma_session');
+                    if (auth === 'true' && sessionStr) {
+                        var session = JSON.parse(sessionStr);
+                        if (session.expires > Date.now()) {
+                            window.location.href = CONFIG.redirectUrl;
+                            return true;
+                        } else {
+                            localStorage.removeItem('fantazma_auth');
+                            localStorage.removeItem('fantazma_session');
+                        }
+                    }
+                } catch (e) { console.error('Session check failed:', e); }
+                return false;
+            }
+            function init() {
+                try {
+                    dom.loadingOverlay = getEl('loadingOverlay');
+                    dom.particles = getEl('particles');
+                    dom.errorMsg = getEl('errorMsg');
+                    dom.successMsg = getEl('successMsg');
+                    dom.loginForm = getEl('loginForm');
+                    dom.email = getEl('email');
+                    dom.password = getEl('password');
+                    dom.signInBtn = getEl('signInBtn');
+                    dom.signInText = getEl('signInText');
+                    if (checkExistingSession()) return;
+                    createParticles();
+                    if (dom.loginForm) {
+                        dom.loginForm.addEventListener('submit', handleEmailLogin);
+                    }
+                    var walletButtons = {
+                        'btnMetaMask': 'metamask',
+                        'btnWalletConnect': 'walletconnect',
+                        'btnCoinbase': 'coinbase',
+                        'btnPhantom': 'phantom'
+                    };
+                    for (var btnId in walletButtons) {
+                        (function(id, type) {
+                            var btn = getEl(id);
+                            if (btn) {
+                                btn.addEventListener('click', function() { connectWallet(type); });
+                            }
+                        })(btnId, walletButtons[btnId]);
+                    }
+                    hideLoadingOverlay();
+                    console.log('Fantazma Login initialized successfully');
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    hideLoadingOverlay();
+                    showError('Something went wrong. Please refresh the page.');
+                }
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+            window.addEventListener('load', function() { hideLoadingOverlay(); });
+            setTimeout(function() {
+                hideLoadingOverlay();
+                if (!dom.loginForm) {
+                    console.warn('Emergency init triggered');
+                    init();
+                }
+            }, 3000);
+        })();
+    </script>
+</body>
+</html>

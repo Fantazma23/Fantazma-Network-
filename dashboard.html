@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantazma Network - Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .spinner {
+            width: 60px; height: 60px;
+            border: 4px solid rgba(168, 85, 247, 0.3);
+            border-top-color: #a855f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text {
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1em;
+            letter-spacing: 2px;
+        }
+        .header {
+            background: rgba(20, 20, 30, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .logo {
+            font-size: 1.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #a855f7 50%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 3px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7c3aed, #3b82f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+        .user-name {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .logout-btn {
+            padding: 8px 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+        }
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            gap: 0;
+            min-height: calc(100vh - 70px);
+        }
+        .sidebar {
+            background: rgba(15, 15, 25, 0.95);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px 0;
+        }
+        .nav-item {
+            padding: 14px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: rgba(168, 85, 247, 0.1);
+            color: #fff;
+            border-left-color: #a855f7;
+        }
+        .nav-item .icon {
+            font-size: 1.3em;
+            width: 24px;
+            text-align: center;
+        }
+        .content {
+            padding: 25px;
+            overflow-y: auto;
+        }
+        .section-title {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title .live-indicator {
+            width: 10px; height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .video-container {
+            background: #111;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .video-player {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .video-placeholder {
+            text-align: center;
+            padding: 40px;
+        }
+        .video-placeholder .play-btn {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7c3aed, #3b82f6);
+            border: none;
+            color: #fff;
+            font-size: 2em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
+        }
+        .video-placeholder .play-btn:hover {
+            transform: scale(1.1);
+        }
+        .video-info {
+            padding: 20px;
+        }
+        .video-info h3 {
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+        .video-info p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9em;
+        }
+        .tv-guide {
+            background: rgba(20, 20, 30, 0.6);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 25px;
+        }
+        .guide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .time-toggle {
+            display: flex;
+            gap: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 4px;
+        }
+        .time-toggle button {
+            padding: 6px 14px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.6);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+        }
+        .time-toggle button.active {
+            background: rgba(168, 85, 247, 0.3);
+            color: #fff;
+        }
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        .schedule-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .schedule-time {
+            font-size: 0.85em;
+            color: #a855f7;
+            font-weight: 600;
+            min-width: 70px;
+        }
+        .schedule-title {
+            flex: 1;
+            font-size: 0.95em;
+        }
+        .schedule-status {
+            font-size: 0.75em;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(34, 197, 94, 0.1);
+            color: #86efac;
+        }
+        .schedule-status.upcoming {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .content-card {
+            background: rgba(20, 20, 30, 0.6);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .content-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(168, 85, 247, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        .content-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+        .content-meta {
+            padding: 12px;
+        }
+        .content-meta h4 {
+            font-size: 0.9em;
+            margin-bottom: 4px;
+        }
+        .content-meta p {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .chat-panel {
+            background: rgba(15, 15, 25, 0.95);
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .chat-header h3 {
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-message {
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border-bottom-left-radius: 4px;
+        }
+        .chat-message.own {
+            background: rgba(168, 85, 247, 0.15);
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+        }
+        .chat-message .msg-user {
+            font-size: 0.75em;
+            color: #a855f7;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .chat-message .msg-text {
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        .chat-message .msg-time {
+            font-size: 0.7em;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 4px;
+        }
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9em;
+        }
+        .chat-input:focus {
+            outline: none;
+            border-color: #a855f7;
+        }
+        .chat-send {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #7c3aed, #3b82f6);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+        .chat-send:hover {
+            transform: scale(1.05);
+        }
+        .sub-banner {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(59, 130, 246, 0.2));
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .sub-banner h3 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+        .sub-banner p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 15px;
+        }
+        .sub-banner .price {
+            font-size: 2em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sub-banner .price-note {
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 5px;
+        }
+        .section { display: none; }
+        .section.active { display: block; }
+        @media (max-width: 1200px) {
+            .main-container { grid-template-columns: 200px 1fr; }
+            .chat-panel { display: none; }
+        }
+        @media (max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .header { padding: 15px; }
+            .content { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading Fantazma Network...</div>
+    </div>
+    <header class="header" id="header" style="display:none;">
+        <div class="logo">FANTAZMA</div>
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <span class="user-name" id="userName">Loading...</span>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </header>
+    <div class="main-container" id="mainContainer" style="display:none;">
+        <nav class="sidebar">
+            <div class="nav-item active" data-section="live">
+                <span class="icon">&#128250;</span> Live Stream
+            </div>
+            <div class="nav-item" data-section="content">
+                <span class="icon">&#127916;</span> Content Library
+            </div>
+            <div class="nav-item" data-section="guide">
+                <span class="icon">&#128197;</span> TV Guide
+            </div>
+            <div class="nav-item" data-section="subscription">
+                <span class="icon">&#128142;</span> Subscription
+            </div>
+            <div class="nav-item" data-section="wallet">
+                <span class="icon">&#128091;</span> Wallet
+            </div>
+        </nav>
+        <main class="content">
+            <div class="section active" id="section-live">
+                <h2 class="section-title">
+                    <span class="live-indicator"></span>
+                    Live Broadcast
+                </h2>
+                <div class="video-container">
+                    <div class="video-player" id="videoPlayer">
+                        <div class="video-placeholder">
+                            <button class="play-btn" id="playBtn">&#9654;</button>
+                            <p style="color:rgba(255,255,255,0.6);">Click to start live stream</p>
+                            <p style="color:rgba(255,255,255,0.4);font-size:0.85em;margin-top:10px;">Demo stream - no backend required</p>
+                        </div>
+                    </div>
+                    <div class="video-info">
+                        <h3>Fantazma Live - Main Channel</h3>
+                        <p>24/7 streaming content &#8226; Sacred geometry visuals &#8226; Binaural audio</p>
+                    </div>
+                </div>
+                <div class="sub-banner">
+                    <h3>&#127775; Upgrade to Premium</h3>
+                    <p>Unlock exclusive content, HD streaming, and ad-free experience</p>
+                    <div class="price">$1.89<span style="font-size:0.5em;">/mo</span></div>
+                    <div class="price-note">Processing fee applies &#8226; Cancel anytime</div>
+                </div>
+            </div>
+            <div class="section" id="section-content">
+                <h2 class="section-title">&#127916; Content Library</h2>
+                <div class="content-grid" id="contentGrid"></div>
+            </div>
+            <div class="section" id="section-guide">
+                <h2 class="section-title">&#128197; TV Guide</h2>
+                <div class="tv-guide">
+                    <div class="guide-header">
+                        <h3>Today's Schedule</h3>
+                        <div class="time-toggle">
+                            <button class="active" data-period="am">AM</button>
+                            <button data-period="pm">PM</button>
+                        </div>
+                    </div>
+                    <div class="schedule-list" id="scheduleList"></div>
+                </div>
+            </div>
+            <div class="section" id="section-subscription">
+                <h2 class="section-title">&#128142; Subscription</h2>
+                <div class="sub-banner" style="padding:40px;">
+                    <h3>Premium Membership</h3>
+                    <div class="price" style="font-size:3em;">$1.89<span style="font-size:0.4em;">/month</span></div>
+                    <p style="margin:20px 0;">&#10003; HD Streaming<br>&#10003; Ad-Free Experience<br>&#10003; Exclusive Content<br>&#10003; Priority Chat<br>&#10003; Download Access</p>
+                    <button style="padding:15px 40px;font-size:1.1em;margin-top:20px;background:linear-gradient(135deg,#7c3aed,#3b82f6);border:none;border-radius:12px;color:#fff;cursor:pointer;" id="subscribeBtn">
+                        Subscribe Now
+                    </button>
+                    <p style="margin-top:15px;color:rgba(255,255,255,0.5);font-size:0.85em;">Secure payment via Stripe &#8226; Instant activation</p>
+                </div>
+            </div>
+            <div class="section" id="section-wallet">
+                <h2 class="section-title">&#128091; Wallet</h2>
+                <div class="tv-guide">
+                    <div style="text-align:center;padding:40px;">
+                        <div style="font-size:4em;margin-bottom:20px;">&#128142;</div>
+                        <h3>Connected Wallet</h3>
+                        <p id="walletAddress" style="font-family:monospace;background:rgba(255,255,255,0.05);padding:10px;border-radius:8px;margin:15px 0;word-break:break-all;">Not connected</p>
+                        <div style="display:flex;gap:15px;justify-content:center;margin-top:20px;">
+                            <div style="text-align:center;">
+                                <div style="font-size:1.5em;font-weight:700;">0</div>
+                                <div style="font-size:0.8em;color:rgba(255,255,255,0.5);">AOC Tokens</div>
+                            </div>
+                            <div style="text-align:center;">
+                                <div style="font-size:1.5em;font-weight:700;">0.00</div>
+                                <div style="font-size:0.8em;color:rgba(255,255,255,0.5);">ETH Balance</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <aside class="chat-panel">
+            <div class="chat-header">
+                <h3>&#128172; Live Chat</h3>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Type a message...">
+                <button class="chat-send" id="chatSend">&#10148;</button>
+            </div>
+        </aside>
+    </div>
+    <script>
+        (function() {
+            'use strict';
+            var CONFIG = {
+                loginUrl: '/login.html',
+                demoMode: true
+            };
+            var dom = {};
+            function getEl(id) { return document.getElementById(id); }
+            function getSession() {
+                try {
+                    var auth = localStorage.getItem('fantazma_auth');
+                    var sessionStr = localStorage.getItem('fantazma_session');
+                    if (auth === 'true' && sessionStr) {
+                        var session = JSON.parse(sessionStr);
+                        if (session.expires > Date.now()) {
+                            return session;
+                        }
+                    }
+                } catch (e) {}
+                return null;
+            }
+            function clearSession() {
+                localStorage.removeItem('fantazma_auth');
+                localStorage.removeItem('fantazma_session');
+                window.location.href = CONFIG.loginUrl;
+            }
+            function hideLoading() {
+                var overlay = dom.loadingOverlay;
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                    setTimeout(function() { overlay.style.display = 'none'; }, 500);
+                }
+                if (dom.header) dom.header.style.display = '';
+                if (dom.mainContainer) dom.mainContainer.style.display = '';
+            }
+            function showUserInfo(session) {
+                var user = session.data || {};
+                var name = user.name || user.email || 'User';
+                var initial = name.charAt(0).toUpperCase();
+                if (dom.userName) dom.userName.textContent = name;
+                if (dom.userAvatar) dom.userAvatar.textContent = initial;
+                if (dom.walletAddress) dom.walletAddress.textContent = user.address || 'Demo Address';
+            }
+            function initNavigation() {
+                var navItems = document.querySelectorAll('.nav-item');
+                navItems.forEach(function(item) {
+                    item.addEventListener('click', function() {
+                        var section = this.getAttribute('data-section');
+                        navItems.forEach(function(n) { n.classList.remove('active'); });
+                        this.classList.add('active');
+                        document.querySelectorAll('.section').forEach(function(s) {
+                            s.classList.remove('active');
+                        });
+                        var target = getEl('section-' + section);
+                        if (target) target.classList.add('active');
+                    });
+                });
+            }
+            function loadContentLibrary() {
+                var grid = dom.contentGrid;
+                if (!grid) return;
+                var contents = [
+                    { icon: '&#127932;', title: 'Sacred Frequencies', desc: 'Binaural beats collection' },
+                    { icon: '&#127916;', title: 'Arousal Study Doc', desc: 'Polan et al. (2003) analysis' },
+                    { icon: '&#128302;', title: 'Chakra Alignment', desc: 'Energy healing sessions' },
+                    { icon: '&#127769;', title: 'Lunar Cycles', desc: 'Astrology programming' },
+                    { icon: '&#9889;', title: 'NEXUS System', desc: 'Arousal frequency tech' },
+                    { icon: '&#128225;', title: 'Live Broadcasts', desc: '24/7 streaming archive' }
+                ];
+                contents.forEach(function(item) {
+                    var card = document.createElement('div');
+                    card.className = 'content-card';
+                    card.innerHTML = '<div class="content-thumb">' + item.icon + '</div><div class="content-meta"><h4>' + item.title + '</h4><p>' + item.desc + '</p></div>';
+                    grid.appendChild(card);
+                });
+            }
+            function loadTVGuide() {
+                var list = dom.scheduleList;
+                if (!list) return;
+                var schedules = [
+                    { time: '6:00 AM', title: 'Morning Frequencies', status: 'LIVE' },
+                    { time: '9:00 AM', title: 'Sacred Geometry Hour', status: 'upcoming' },
+                    { time: '12:00 PM', title: 'Midday Meditation', status: 'upcoming' },
+                    { time: '3:00 PM', title: 'NEXUS Arousal Session', status: 'upcoming' },
+                    { time: '6:00 PM', title: 'Evening Chakra Cleanse', status: 'upcoming' },
+                    { time: '9:00 PM', title: 'Night Stream - Deep Sleep', status: 'upcoming' },
+                    { time: '12:00 AM', title: 'Lunar Programming', status: 'upcoming' }
+                ];
+                schedules.forEach(function(item) {
+                    var div = document.createElement('div');
+                    div.className = 'schedule-item';
+                    div.innerHTML = '<span class="schedule-time">' + item.time + '</span><span class="schedule-title">' + item.title + '</span><span class="schedule-status ' + item.status + '">' + (item.status === 'LIVE' ? '&#9679; LIVE' : 'Upcoming') + '</span>';
+                    list.appendChild(div);
+                });
+                var toggles = document.querySelectorAll('.time-toggle button');
+                toggles.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        toggles.forEach(function(b) { b.classList.remove('active'); });
+                        this.classList.add('active');
+                    });
+                });
+            }
+            function initChat() {
+                var messages = dom.chatMessages;
+                var input = dom.chatInput;
+                var sendBtn = dom.chatSend;
+                if (!messages) return;
+                var demoMessages = [
+                    { user: 'System', text: 'Welcome to Fantazma Network chat!', time: 'Now', own: false },
+                    { user: 'SacredUser', text: 'The binaural tracks are amazing tonight &#128302;', time: '2m ago', own: false },
+                    { user: 'FrequencyMaster', text: 'NEXUS system working perfectly', time: '5m ago', own: false },
+                    { user: 'ChakraHealer', text: 'Anyone tried the new arousal frequency?', time: '8m ago', own: false }
+                ];
+                demoMessages.forEach(function(msg) {
+                    addMessage(msg.user, msg.text, msg.time, msg.own);
+                });
+                function addMessage(user, text, time, own) {
+                    var div = document.createElement('div');
+                    div.className = 'chat-message' + (own ? ' own' : '');
+                    div.innerHTML = '<div class="msg-user">' + user + '</div><div class="msg-text">' + text + '</div><div class="msg-time">' + time + '</div>';
+                    messages.appendChild(div);
+                    messages.scrollTop = messages.scrollHeight;
+                }
+                function sendMessage() {
+                    var text = input ? input.value.trim() : '';
+                    if (!text) return;
+                    addMessage('You', text, 'Just now', true);
+                    if (input) input.value = '';
+                    setTimeout(function() {
+                        var replies = [
+                            'Interesting point! &#127775;',
+                            'The frequencies are aligned tonight',
+                            'Sacred geometry in action!',
+                            'NEXUS system confirms that energy'
+                        ];
+                        var reply = replies[Math.floor(Math.random() * replies.length)];
+                        addMessage('AutoBot', reply, 'Just now', false);
+                    }, 1500);
+                }
+                if (sendBtn) {
+                    sendBtn.addEventListener('click', sendMessage);
+                }
+                if (input) {
+                    input.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') sendMessage();
+                    });
+                }
+            }
+            function initVideoPlayer() {
+                var playBtn = dom.playBtn;
+                var player = dom.videoPlayer;
+                if (playBtn && player) {
+                    playBtn.addEventListener('click', function() {
+                        player.innerHTML = '<div style="text-align:center;padding:60px;"><div style="font-size:4em;margin-bottom:20px;">&#128225;</div><h3 style="margin-bottom:10px;">Live Stream Active</h3><p style="color:rgba(255,255,255,0.6);">Streaming sacred geometry visuals...</p><p style="color:rgba(255,255,255,0.4);font-size:0.85em;margin-top:15px;">This is a demo. Connect OBS or streaming backend for real video.</p></div>';
+                    });
+                }
+            }
+            function initSubscribe() {
+                var btn = dom.subscribeBtn;
+                if (btn) {
+                    btn.addEventListener('click', function() {
+                        alert('Stripe integration required.\n\nDemo mode: Subscription would process $1.89/month.\n\nSet up Stripe in backend to enable real payments.');
+                    });
+                }
+            }
+            function initLogout() {
+                var btn = dom.logoutBtn;
+                if (btn) {
+                    btn.addEventListener('click', function() {
+                        if (confirm('Are you sure you want to logout?')) {
+                            clearSession();
+                        }
+                    });
+                }
+            }
+            function init() {
+                try {
+                    dom.loadingOverlay = getEl('loadingOverlay');
+                    dom.header = getEl('header');
+                    dom.mainContainer = getEl('mainContainer');
+                    dom.userAvatar = getEl('userAvatar');
+                    dom.userName = getEl('userName');
+                    dom.logoutBtn = getEl('logoutBtn');
+                    dom.contentGrid = getEl('contentGrid');
+                    dom.scheduleList = getEl('scheduleList');
+                    dom.chatMessages = getEl('chatMessages');
+                    dom.chatInput = getEl('chatInput');
+                    dom.chatSend = getEl('chatSend');
+                    dom.playBtn = getEl('playBtn');
+                    dom.videoPlayer = getEl('videoPlayer');
+                    dom.walletAddress = getEl('walletAddress');
+                    dom.subscribeBtn = getEl('subscribeBtn');
+                    var session = getSession();
+                    if (!session) {
+                        window.location.href = CONFIG.loginUrl;
+                        return;
+                    }
+                    showUserInfo(session);
+                    initNavigation();
+                    loadContentLibrary();
+                    loadTVGuide();
+                    initChat();
+                    initVideoPlayer();
+                    initSubscribe();
+                    initLogout();
+                    hideLoading();
+                    console.log('Fantazma Dashboard initialized');
+                } catch (error) {
+                    console.error('Dashboard init error:', error);
+                    hideLoading();
+                }
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+            window.addEventListener('load', function() { hideLoading(); });
+            setTimeout(function() { hideLoading(); }, 3000);
+        })();
+    </script>
+</body>
+</html>

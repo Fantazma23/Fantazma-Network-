@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foster 2028 Policy Platform — Complete Transparency</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f0ff;
+            --secondary: #ff00e5;
+            --accent: #ffd700;
+            --dark: #0a0a1a;
+            --darker: #050510;
+            --patriot-red: #b22234;
+            --patriot-blue: #3c3b6e;
+            --patriot-white: #f0f0f0;
+            --glass: rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--darker);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Background */
+        .bg-animation {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0,240,255,0.04) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(178,34,52,0.04) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(60,59,110,0.03) 0%, transparent 60%);
+            animation: bgPulse 25s ease-in-out infinite;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+        }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            background: rgba(5,5,16,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 0 20px;
+        }
+
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+
+        .nav-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .nav-logo span { color: var(--patriot-red); }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover { color: var(--primary); }
+
+        .nav-btn {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, var(--patriot-red), var(--patriot-blue));
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(178,34,52,0.3);
+        }
+
+        /* Hero */
+        .hero {
+            position: relative;
+            z-index: 10;
+            padding: 120px 20px 60px;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(178,34,52,0.2);
+            border: 1px solid rgba(178,34,52,0.4);
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--patriot-red);
+            margin-bottom: 24px;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(32px, 6vw, 56px);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff, var(--patriot-red), var(--patriot-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(16px, 2.5vw, 22px);
+            font-weight: 300;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 32px;
+            letter-spacing: 1px;
+        }
+
+        .hero-summary {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: left;
+            font-size: 16px;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.85);
+        }
+
+        .hero-summary strong {
+            color: var(--patriot-red);
+            font-weight: 700;
+        }
+
+        /* Inverted Pyramid Structure */
+        .pyramid-container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 80px;
+        }
+
+        /* Level 1: The Vision (Broadest) */
+        .level-vision {
+            text-align: center;
+            padding: 60px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .level-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .level-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .level-desc {
+            font-size: 18px;
+            color: rgba(255,255,255,0.7);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* Level 2: The Pillars */
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 40px 0;
+        }
+
+        .pillar-card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 28px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .pillar-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--patriot-red);
+            box-shadow: 0 12px 40px rgba(178,34,52,0.15);
+        }
+
+        .pillar-card.active {
+            border-color: var(--patriot-red);
+            background: rgba(178,34,52,0.05);
+        }
+
+        .pillar-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            color: rgba(178,34,52,0.3);
+            margin-bottom: 8px;
+        }
+
+        .pillar-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pillar-icon { font-size: 24px; }
+
+        .pillar-teaser {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            line-height: 1.5;
+        }
+
+        /* Level 3: Policy Details (Expandable) */
+        .policy-detail {
+            display: none;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 32px;
+            margin-top: 20px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .policy-detail.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .detail-header h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .detail-section {
+            margin-bottom: 24px;
+        }
+
+        .detail-section h4 {
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .detail-section p, .detail-section li {
+            font-size: 15px;
+            color: rgba(255,255,255,0.8);
+            line-height: 1.7;
+            margin-bottom: 8px;
+        }
+
+        .detail-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .detail-section li {
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .detail-section li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--patriot-red);
+            font-weight: 700;
+        }
+
+        .detail-section .highlight {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .detail-section .stat-box {
+            background: rgba(178,34,52,0.1);
+            border: 1px solid rgba(178,34,52,0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+
+        .detail-section .stat-box strong {
+            color: var(--patriot-red);
+            font-size: 18px;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--patriot-red), var(--patriot-blue));
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -26px;
+            top: 4px;
+            width: 12px;
+            height: 12px;
+            background: var(--patriot-red);
+            border-radius: 50%;
+            border: 2px solid var(--darker);
+        }
+
+        .timeline-item .phase {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .timeline-item .desc {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* Footer */
+        .footer {
+            position: relative;
+            z-index: 10;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding: 40px 20px;
+            text-align: center;
+            color: rgba(255,255,255,0.4);
+            font-size: 13px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover { color: var(--primary); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero { padding-top: 80px; }
+            .pillars-grid { grid-template-columns: 1fr; }
+            .policy-detail { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="/campaign.html" class="nav-logo">FOSTER<span>2028</span></a>
+            <div class="nav-links">
+                <a href="/campaign.html" class="nav-link">Home</a>
+                <a href="#policy" class="nav-link">Policy</a>
+                <a href="/campaign.html#donate" class="nav-link">Donate</a>
+                <a href="/campaign.html#join" class="nav-link">Join</a>
+                <a href="/dashboard.html" class="nav-link">Live</a>
+                <a href="/login.html" class="nav-btn">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero: Inverted Pyramid TOP -->
+    <section class="hero">
+        <div class="hero-badge">🇺🇸 Complete Policy Transparency</div>
+        <h1 class="hero-title">The Foster Platform</h1>
+        <p class="hero-subtitle">Every policy. Every pillar. Every detail. Nothing hidden.</p>
+
+        <div class="hero-summary">
+            <strong>The Foster For President 2028 platform is built on a single principle:</strong> Every American deserves a second chance. Whether you are returning from incarceration, struggling with addiction, facing economic hardship, or seeking educational opportunity — this administration will fight for you. Our policies are organized into six interconnected pillars, each designed to reinforce the others. No silos. No hidden agendas. Complete transparency. <strong>Scroll down to explore every policy in full detail.</strong>
+        </div>
+    </section>
+
+    <!-- INVERTED PYRAMID STRUCTURE -->
+    <div class="pyramid-container">
+
+        <!-- LEVEL 1: THE VISION (Broadest) -->
+        <div class="level-vision" id="policy">
+            <div class="level-label">Level 1 — The Vision</div>
+            <h2 class="level-title">A Second Chance for America</h2>
+            <p class="level-desc">
+                We believe the measure of a nation is not how it treats the powerful, but how it uplifts the forgotten. Our vision is an America where no one is defined by their worst moment, where redemption is possible, and where every citizen has the tools to build a meaningful life. This is not charity — it is justice. It is economics. It is the American way.
+            </p>
+        </div>
+
+        <!-- LEVEL 2: THE SIX PILLARS -->
+        <div class="level-label" style="text-align:center;margin-top:60px;">Level 2 — The Six Pillars</div>
+        <p style="text-align:center;color:rgba(255,255,255,0.6);margin-bottom:40px;">Tap any pillar to expand full policy details</p>
+
+        <div class="pillars-grid">
+            <!-- PILLAR 1: CRIMINAL JUSTICE -->
+            <div class="pillar-card" onclick="togglePolicy('justice')">
+                <div class="pillar-number">01</div>
+                <div class="pillar-title">
+                    <span class="pillar-icon">🏛️</span>
+                    Criminal Justice Reform
+                </div>
+                <div class="pillar-teaser">End mass incarceration. Restore voting rights. Fund rehabilitation over punishment.</div>
+            </div>
+
+            <!-- PILLAR 2: ECONOMIC OPPORTUNITY -->
+            <div class="pillar-card" onclick="togglePolicy('economy')">
+                <div class="pillar-number">02</div>
+                <div class="pillar-title">
+                    <span class="pillar-icon">💰</span>
+                    Economic Opportunity
+                </div>
+                <div class="pillar-teaser">Living wages, small business support, financial literacy, and wealth-building for all communities.</div>
+            </div>
+
+            <!-- PILLAR 3: EDUCATION & YOUTH -->
+            <div class="pillar-card" onclick="togglePolicy('education')">
+                <div class="pillar-number">03</div>
+                <div class="pillar-title">
+                    <span class="pillar-icon">📚</span>
+                    Education & Youth
+                </div>
+                <div class="pillar-teaser">Free community college, vocational training, mentorship, and ending the school-to-prison pipeline.</div>
+            </div>
+
+            <!-- PILLAR 4: HEALTHCARE ACCESS -->
+            <div class="pillar-card" onclick="togglePolicy('healthcare')">
+                <div class="pillar-number">04</div>
+                <div class="pillar-title">
+                    <span class="pillar-icon">🏥</span>
+                    Healthcare Access
+                </div>
+                <div class="pillar-teaser">Affordable care for all, mental health parity, addiction recovery, and rural health expansion.</div>
+            </div>
+
+            <!-- PILLAR 5: ENVIRONMENTAL JUSTICE -->
+            <div class="pillar-card" onclick="togglePolicy('environment')">
+                <div class="pillar-number">05</div>
+                <div class="pillar-title">
+                    <span class="pillar-icon">🌱</span>
+                    Environmental Justice
+                </div>
+                <div class="pillar-teaser">Clean energy jobs, pollution reduction in vulnerable communities, sustainable infrastructure.</div>
+            </div>
+
+            <!-- PILLAR 6: UNITY & HEALING -->
+            <div class="pillar-card" onclick="togglePolicy('unity')">
+                <div class="pillar-number">06</div>
+                <div class="pillar-title">
+                    <span class="pillar-icon">🤝</span>
+                    Unity & Healing
+                </div>
+                <div class="pillar-teaser">Bridge political divides, restore institutional trust, community dialogue, national service.</div>
+            </div>
+        </div>
+
+        <!-- LEVEL 3: POLICY DETAILS (Expandable) -->
+        <div class="level-label" style="text-align:center;margin-top:40px;">Level 3 — Full Policy Details</div>
+        <p style="text-align:center;color:rgba(255,255,255,0.6);margin-bottom:40px;">Comprehensive implementation plans, timelines, and measurable outcomes</p>
+
+        <!-- CRIMINAL JUSTICE DETAIL -->
+        <div class="policy-detail" id="justice-detail">
+            <div class="detail-header">
+                <span style="font-size:32px;">🏛️</span>
+                <h3>Criminal Justice Reform</h3>
+            </div>
+
+            <div class="detail-section">
+                <h4>The Problem</h4>
+                <p>The United States holds <span class="highlight">less than 5% of the world's population but houses nearly 25% of the world's prisoners</span>. Mass incarceration has destroyed families, wasted taxpayer dollars, and failed to reduce crime. The recidivism rate exceeds 75% in many states because we prioritize punishment over rehabilitation.</p>
+                <div class="stat-box">
+                    <strong>2.3 million</strong> Americans are currently incarcerated — the highest rate in the world, even higher than countries like China, Russia, and Iran.
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4>The Solution — Five Core Actions</h4>
+                <ul>
+                    <li><span class="highlight">End mandatory minimums</span> for non-violent offenses. Judges must have discretion to match punishment to circumstance.</li>
+                    <li><span class="highlight">Expunge records</span> automatically for non-violent misdemeanors after 5 years of clean conduct. No filing fees. No lawyer required.</li>
+                    <li><span class="highlight">Restore voting rights</span> immediately upon release from incarceration. Citizenship does not end at the prison gate.</li>
+                    <li><span class="highlight">Fund rehabilitation</span> — job training, addiction treatment, mental health counseling — at 2x current levels. Shift funding from prisons to people.</li>
+                    <li><span class="highlight">Ban the box</span> federally for all government contractors and incentivize private employers to do the same through tax credits.</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <h4>Implementation Timeline</h4>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="phase">Year 1 — Executive Action</div>
+                        <div class="desc">Direct DOJ to deprioritize non-violent drug prosecutions. Issue pardons for federal non-violent drug offenders. Restore voting rights via executive order.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 2 — Legislative Push</div>
+                        <div class="desc">Pass comprehensive criminal justice reform bill. End mandatory minimums. Fund rehabilitation programs. Automatic expungement system online.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 3 — Systemic Change</div>
+                        <div class="desc">Close 25% of for-profit prisons. Redirect $10B annually to rehabilitation and reentry programs. National ban-the-box standard in place.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 4 — Measurement & Expansion</div>
+                        <div class="desc">Publish recidivism data by state. Expand successful programs. Target: Reduce federal prison population by 50% from 2028 baseline.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4>Measurable Outcomes</h4>
+                <ul>
+                    <li>Reduce federal incarceration rate by <span class="highlight">50% within 4 years</span></li>
+                    <li>Cut recidivism to <span class="highlight">below 30%</span> through rehabilitation funding</li>
+                    <li>Restore voting rights to <span class="highlight">5+ million</span> formerly incarcerated citizens</li>
+                    <li>Save taxpayers <span class="highlight">$15 billion annually</span> by shifting from prisons to prevention</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ECONOMIC OPPORTUNITY DETAIL -->
+        <div class="policy-detail" id="economy-detail">
+            <div class="detail-header">
+                <span style="font-size:32px;">💰</span>
+                <h3>Economic Opportunity</h3>
+            </div>
+
+            <div class="detail-section">
+                <h4>The Problem</h4>
+                <p>Despite record stock market highs, <span class="highlight">60% of Americans live paycheck to paycheck</span>. Wages have stagnated for 40 years while CEO pay has skyrocketed 1,000%. Small businesses — the backbone of American employment — face crushing regulatory and tax burdens. Wealth inequality is at levels not seen since the Great Depression.</p>
+                <div class="stat-box">
+                    <strong>$7.25/hour</strong> is the federal minimum wage — unchanged since 2009. Adjusted for inflation, it has lost 30% of its purchasing power.
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4>The Solution — Five Core Actions</h4>
+                <ul>
+                    <li><span class="highlight">Raise federal minimum wage to $15/hour</span>, indexed to inflation. No worker working full-time should live in poverty.</li>
+                    <li><span class="highlight">Small Business Opportunity Fund</span> — $50B in low-interest loans and grants for businesses in underserved communities, with priority for returning citizens and minority entrepreneurs.</li>
+                    <li><span class="highlight">Financial literacy mandate</span> in all public high schools. Teach budgeting, credit, investing, and entrepreneurship before graduation.</li>
+                    <li><span class="highlight">Wealth-building accounts</span> for every child born in America — $1,000 seed investment at birth, with matching contributions for low-income families, accessible at age 18 for education, home, or business.</li>
+                    <li><span class="highlight">Gig economy protections</span> — portable benefits, collective bargaining rights, and minimum earnings guarantees for independent contractors.</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <h4>Implementation Timeline</h4>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="phase">Year 1 — Immediate Relief</div>
+                        <div class="desc">Raise minimum wage to $12/hour immediately. Launch Small Business Opportunity Fund. Expand EITC for childless workers.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 2 — Full Wage & Benefits</div>
+                        <div class="desc">Minimum wage reaches $15/hour. Portable benefits pilot for gig workers. Financial literacy curriculum deployed to 50% of schools.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 3 — Wealth Building</div>
+                        <div class="desc">Universal child wealth accounts launched. Small Business Fund reaches $25B deployed. Gig worker protections law passed.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 4 — Measurement & Scale</div>
+                        <div class="desc">Poverty rate target: below 8%. Median wage growth target: 5% annually. Small business formation target: 500,000 new businesses/year.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4>Measurable Outcomes</h4>
+                <ul>
+                    <li>Lift <span class="highlight">4 million Americans</span> out of poverty through wage increases</li>
+                    <li>Create <span class="highlight">500,000 new small businesses</span> annually in underserved communities</li>
+                    <li>Reduce wealth gap between Black and white households by <span class="highlight">25%</span></li>
+                    <li>Achieve <span class="highlight">5% median wage growth</span> annually — double the 40-year average</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- EDUCATION DETAIL -->
+        <div class="policy-detail" id="education-detail">
+            <div class="detail-header">
+                <span style="font-size:32px;">📚</span>
+                <h3>Education & Youth</h3>
+            </div>
+
+            <div class="detail-section">
+                <h4>The Problem</h4>
+                <p>Student debt exceeds <span class="highlight">$1.7 trillion</span>, crushing an entire generation. Vocational training is stigmatized despite 6 million unfilled skilled trade jobs. The school-to-prison pipeline funnels disadvantaged youth into incarceration instead of opportunity. Teachers are underpaid and overworked, with 44% leaving within 5 years.</p>
+                <div class="stat-box">
+                    <strong>$1.7 trillion</strong> in student loan debt. The average graduate owes $37,000. For Black graduates, the average is $52,000.
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4>The Solution — Five Core Actions</h4>
+                <ul>
+                    <li><span class="highlight">Free community college</span> nationwide for all Americans. Two years of tuition, books, and fees covered by federal investment.</li>
+                    <li><span class="highlight">Vocational training revolution</span> — expand trade schools, apprenticeships, and certificate programs. Partner with unions and employers for guaranteed placement.</li>
+                    <li><span class="highlight">End the school-to-prison pipeline</span> — eliminate zero-tolerance policies. Replace school resource officers with counselors and social workers at 3:1 ratio.</li>
+                    <li><span class="highlight">Teacher pay raise</span> — minimum $60,000 starting salary nationwide, with performance bonuses. Loan forgiveness for teachers in underserved areas.</li>
+                    <li><span class="highlight">Mentorship mandate</span> — every at-risk youth paired with a trained mentor from age 12 through graduation. Funded at $2B annually.</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <h4>Implementation Timeline</h4>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="phase">Year 1 — Free Community College</div>
+                        <div class="desc">Launch federal community college grant program. Cover 100% of tuition for families earning under $75K. Partial coverage up to $125K.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 2 — Vocational Expansion</div>
+                        <div class="desc">Open 500 new vocational training centers. Partner with 1,000 employers for apprenticeship programs. Teacher minimum salary: $60K.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 3 — Pipeline Reform</div>
+                        <div class="desc">Zero-tolerance policies banned in federal-funded schools. Counselor-to-student ratio: 1:250. Mentorship program reaches 1 million youth.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 4 — Debt Relief & Scale</div>
+                        <div class="desc">Forgive $10K in federal student loans for all borrowers. Forgive full amount for public service workers. 80% high school graduation rate target.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4>Measurable Outcomes</h4>
+                <ul>
+                    <li>Enroll <span class="highlight">5 million students</span> in free community college annually</li>
+                    <li>Place <span class="highlight">1 million apprentices</span> in skilled trade jobs</li>
+                    <li>Reduce school suspensions by <span class="highlight">60%</span> through counselor expansion</li>
+                    <li>Cut student debt burden by <span class="highlight">$400 billion</span> through forgiveness and free college</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- HEALTHCARE DETAIL -->
+        <div class="policy-detail" id="healthcare-detail">
+            <div class="detail-header">
+                <span style="font-size:32px;">🏥</span>
+                <h3>Healthcare Access</h3>
+            </div>
+
+            <div class="detail-section">
+                <h4>The Problem</h4>
+                <p><span class="highlight">30 million Americans remain uninsured</span>. Mental health treatment is inaccessible for 60% of those who need it. The opioid epidemic claims 100,000 lives annually. Rural hospitals are closing at a rate of one per month, leaving communities without emergency care.</p>
+                <div class="stat-box">
+                    <strong>100,000+</strong> Americans die annually from opioid overdose. For every death, 10 more struggle with addiction. Treatment waitlists exceed 6 months in most states.
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4>The Solution — Five Core Actions</h4>
+                <ul>
+                    <li><span class="highlight">Universal healthcare access</span> through a public option available to all Americans, regardless of employment. Premiums capped at 8% of income.</li>
+                    <li><span class="highlight">Mental health parity</span> — enforce existing law requiring insurers to cover mental health equally. Expand community mental health centers by 10,000 nationwide.</li>
+                    <li><span class="highlight">Addiction recovery revolution</span> — treat addiction as a health crisis, not a crime. Fund medication-assisted treatment, residential programs, and harm reduction. Decriminalize possession of small amounts.</li>
+                    <li><span class="highlight">Rural health rescue</span> — fund mobile clinics, telehealth infrastructure, and incentives for doctors to practice in underserved areas. Reopen closed rural hospitals.</li>
+                    <li><span class="highlight">Preventive care mandate</span> — free annual physicals, screenings, and vaccinations for all. Invest in public health infrastructure to prevent the next pandemic.</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <h4>Implementation Timeline</h4>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="phase">Year 1 — Public Option Launch</div>
+                        <div class="desc">Open public option enrollment to all uninsured. Expand Medicaid in holdout states via federal incentives. Launch 2,000 mobile clinics.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 2 — Mental Health & Addiction</div>
+                        <div class="desc">Open 5,000 new mental health centers. Fund 100,000 new addiction treatment beds. Decriminalize possession in federal law. Fentanyl crisis emergency funding: $10B.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 3 — Rural & Preventive</div>
+                        <div class="desc">Reopen 50 closed rural hospitals. Deploy telehealth to 100% of rural counties. Universal preventive care: free annual physicals, screenings, vaccines.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 4 — Measurement & Universal</div>
+                        <div class="desc">Uninsured rate target: below 5%. Mental health access: same-day appointments in 90% of counties. Opioid deaths reduced by 50%.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4>Measurable Outcomes</h4>
+                <ul>
+                    <li>Insure <span class="highlight">30 million uninsured Americans</span> through public option</li>
+                    <li>Reduce opioid deaths by <span class="highlight">50%</span> through treatment and harm reduction</li>
+                    <li>Open <span class="highlight">10,000 mental health centers</span> in underserved communities</li>
+                    <li>Reopen <span class="highlight">50 rural hospitals</span> and deploy mobile clinics to 100% of rural counties</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ENVIRONMENTAL JUSTICE DETAIL -->
+        <div class="policy-detail" id="environment-detail">
+            <div class="detail-header">
+                <span style="font-size:32px;">🌱</span>
+                <h3>Environmental Justice</h3>
+            </div>
+
+            <div class="detail-section">
+                <h4>The Problem</h4>
+                <p>Low-income communities and communities of color bear <span class="highlight">disproportionate pollution burdens</span>. Asthma rates are 3x higher near industrial sites. Climate change threatens coastal cities and agricultural heartlands. Meanwhile, clean energy jobs are growing 3x faster than the overall economy — but training access is unequal.</p>
+                <div class="stat-box">
+                    <strong>3x higher</strong> asthma rates in communities near industrial facilities. 70% of hazardous waste sites are within 1 mile of minority neighborhoods.
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4>The Solution — Five Core Actions</h4>
+                <ul>
+                    <li><span class="highlight">Clean Energy Jobs Corps</span> — train and employ 1 million workers in solar, wind, grid modernization, and energy efficiency. Priority hiring for displaced fossil fuel workers and returning citizens.</li>
+                    <li><span class="highlight">Pollution reduction mandate</span> — 50% cut in industrial emissions by 2032. Strict enforcement in vulnerable communities. Real-time air quality monitoring public dashboard.</li>
+                    <li><span class="highlight">Green infrastructure</span> — retrofit 10 million homes for energy efficiency. Install solar on all federal buildings. Build 500 miles of urban green corridors.</li>
+                    <li><span class="highlight">Climate resilience</span> — fund coastal protection, drought-resistant agriculture, and flood mitigation. Prioritize vulnerable communities in disaster preparedness.</li>
+                    <li><span class="highlight">Environmental justice enforcement</span> — create a federal Environmental Justice Division with subpoena power. Mandatory community impact assessments for all industrial permits.</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <h4>Implementation Timeline</h4>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="phase">Year 1 — Jobs Corps Launch</div>
+                        <div class="desc">Open 100 clean energy training centers. Hire 100,000 workers. Launch federal building solar program. Begin industrial emissions monitoring.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 2 — Infrastructure & Enforcement</div>
+                        <div class="desc">Retrofit 2 million homes. Open Environmental Justice Division. Mandate community impact assessments. Deploy 10,000 air quality monitors.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 3 — Scale & Resilience</div>
+                        <div class="desc">500,000 clean energy workers employed. 25% emissions reduction achieved. Coastal protection projects begin. Urban green corridors: 200 miles.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 4 — Measurement & 2032 Goals</div>
+                        <div class="desc">Target: 1 million clean energy jobs. 50% emissions reduction. 100% federal building solar. Zero new hazardous waste sites in vulnerable communities.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4>Measurable Outcomes</h4>
+                <ul>
+                    <li>Create <span class="highlight">1 million clean energy jobs</span> by 2032</li>
+                    <li>Reduce industrial emissions by <span class="highlight">50%</span> in vulnerable communities</li>
+                    <li>Retrofit <span class="highlight">10 million homes</span> for energy efficiency</li>
+                    <li>Cut asthma rates in high-pollution areas by <span class="highlight">40%</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- UNITY & HEALING DETAIL -->
+        <div class="policy-detail" id="unity-detail">
+            <div class="detail-header">
+                <span style="font-size:32px;">🤝</span>
+                <h3>Unity & Healing</h3>
+            </div>
+
+            <div class="detail-section">
+                <h4>The Problem</h4>
+                <p>Political polarization is at <span class="highlight">Civil War-era levels</span>. Trust in institutions — government, media, business, religion — has collapsed. 70% of Americans believe the country is on the wrong track. Social media algorithms amplify division. We have forgotten how to disagree without demonizing.</p>
+                <div class="stat-box">
+                    <strong>70%</strong> of Americans believe the country is headed in the wrong direction. Trust in government is at 20% — the lowest in recorded history.
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4>The Solution — Five Core Actions</h4>
+                <ul>
+                    <li><span class="highlight">National Service Program</span> — 1 year of paid service for all Americans aged 18-22. Options: military, conservation corps, teaching, healthcare, infrastructure. Builds shared purpose and bridges divides.</li>
+                    <li><span class="highlight">Civic dialogue mandate</span> — fund 10,000 community dialogue circles nationwide. Bring together people who disagree for structured, facilitated conversations. Proven to reduce polarization.</li>
+                    <li><span class="highlight">Institutional transparency</span> — real-time federal spending dashboard. Lobbyist meeting logs published within 24 hours. End dark money in politics through constitutional amendment push.</li>
+                    <li><span class="highlight">Media literacy education</span> — mandatory curriculum in all schools. Teach critical thinking, source verification, and recognition of manipulation tactics. Fund independent local journalism.</li>
+                    <li><span class="highlight">Healing commissions</span> — truth and reconciliation processes for historical injustices: slavery, indigenous displacement, Japanese internment, mass incarceration. Acknowledge the past to build the future.</li>
+                </ul>
+            </div>
+
+            <div class="detail-section">
+                <h4>Implementation Timeline</h4>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="phase">Year 1 — Service & Dialogue</div>
+                        <div class="desc">Launch National Service pilot: 50,000 participants. Open 2,000 dialogue circles. Begin institutional transparency portal. Media literacy pilot in 1,000 schools.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 2 — Scale & Transparency</div>
+                        <div class="desc">National Service: 200,000 participants. Dialogue circles: 5,000. Federal spending portal: 100% real-time. Dark money disclosure bill passed.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 3 — Journalism & Healing</div>
+                        <div class="desc">Fund 500 independent local newsrooms. Media literacy in 50% of schools. Launch first Healing Commission on mass incarceration. Indigenous reconciliation process begins.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="phase">Year 4 — Measurement & Constitutional</div>
+                        <div class="desc">Polarization index target: 20% reduction. Trust in government target: 40%. National Service: 500,000 annually. Constitutional amendment for campaign finance reform introduced.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4>Measurable Outcomes</h4>
+                <ul>
+                    <li>Enroll <span class="highlight">500,000 young Americans</span> annually in National Service</li>
+                    <li>Reduce political polarization index by <span class="highlight">20%</span></li>
+                    <li>Restore trust in government to <span class="highlight">40%</span> (from 20%)</li>
+                    <li>Fund <span class="highlight">500 independent local newsrooms</span> to combat misinformation</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="/campaign.html">Campaign Home</a>
+            <a href="#policy">Policy Platform</a>
+            <a href="/campaign.html#donate">Donate</a>
+            <a href="/campaign.html#join">Join</a>
+            <a href="/dashboard.html">Live Stream</a>
+            <a href="/login.html">Login</a>
+        </div>
+        <p>Paid for by Foster For President 2028 | Not authorized by any candidate or candidate's committee</p>
+        <p style="margin-top:8px;">Complete policy transparency. Every pillar. Every detail. Nothing hidden.</p>
+    </footer>
+
+    <script>
+        function togglePolicy(policyId) {
+            // Close all details
+            var allDetails = document.querySelectorAll('.policy-detail');
+            var allCards = document.querySelectorAll('.pillar-card');
+
+            allDetails.forEach(function(d) { d.classList.remove('active'); });
+            allCards.forEach(function(c) { c.classList.remove('active'); });
+
+            // Open selected
+            var detail = document.getElementById(policyId + '-detail');
+            var card = event.currentTarget;
+
+            if (detail) {
+                detail.classList.add('active');
+                card.classList.add('active');
+
+                // Smooth scroll to detail
+                setTimeout(function() {
+                    detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+    </script>
+</body>
+</html>

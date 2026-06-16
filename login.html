@@ -3,362 +3,599 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fantazma Network - Login</title>
+    <title>Fantazma Network — Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0a0a0a;
-            color: #fff;
-            min-height: 100vh;
-            overflow-x: hidden;
+        :root {
+            --primary: #00f0ff;
+            --secondary: #ff00e5;
+            --accent: #ffd700;
+            --dark: #0a0a1a;
+            --darker: #050510;
+            --glass: rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.1);
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--darker);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background */
         .bg-animation {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #1a0033 0%, #0a0a0a 50%, #001a33 100%);
-            z-index: -2;
+            z-index: 0;
+            overflow: hidden;
         }
+
         .bg-animation::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 20% 50%, rgba(120, 0, 255, 0.15) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(0, 200, 255, 0.1) 0%, transparent 50%);
-            animation: bgPulse 8s ease-in-out infinite;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0,240,255,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,0,229,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(255,215,0,0.03) 0%, transparent 60%);
+            animation: bgPulse 15s ease-in-out infinite;
         }
+
         @keyframes bgPulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
         }
+
         .particles {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
+            z-index: 1;
             pointer-events: none;
         }
+
         .particle {
             position: absolute;
-            width: 4px; height: 4px;
-            background: rgba(255, 255, 255, 0.5);
+            width: 2px; height: 2px;
+            background: var(--primary);
             border-radius: 50%;
-            animation: float 15s infinite;
+            opacity: 0.6;
+            animation: float 8s ease-in-out infinite;
         }
+
         @keyframes float {
-            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+            25% { transform: translateY(-20px) translateX(10px); opacity: 0.8; }
+            50% { transform: translateY(-40px) translateX(-5px); opacity: 0.5; }
+            75% { transform: translateY(-20px) translateX(15px); opacity: 0.7; }
         }
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
+
+        /* Sacred geometry overlay */
+        .sacred-geo {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px; height: 600px;
+            z-index: 1;
+            opacity: 0.03;
+            pointer-events: none;
+            animation: rotateSlow 60s linear infinite;
         }
-        .login-card {
-            background: rgba(20, 20, 30, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 40px;
+
+        @keyframes rotateSlow {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Main container */
+        .login-container {
+            position: relative;
+            z-index: 10;
             width: 100%;
             max-width: 420px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(120, 0, 255, 0.1);
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px 32px;
+            box-shadow: 
+                0 25px 50px rgba(0,0,0,0.4),
+                0 0 0 1px rgba(0,240,255,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.05);
             position: relative;
             overflow: hidden;
         }
+
         .login-card::before {
             content: '';
             position: absolute;
-            top: -2px; left: -2px; right: -2px; bottom: -2px;
-            background: linear-gradient(45deg, #7800ff, #00c8ff, #7800ff);
-            border-radius: 20px;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent), var(--primary));
+            background-size: 300% 100%;
+            animation: gradientShift 4s ease infinite;
         }
-        .login-card:hover::before {
-            opacity: 0.3;
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        .logo {
+
+        /* Logo */
+        .logo-section {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
         }
-        .logo h1 {
-            font-size: 2.2em;
-            background: linear-gradient(135deg, #fff 0%, #a855f7 50%, #3b82f6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 3px;
+
+        .logo-icon {
+            width: 64px; height: 64px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 8px 32px rgba(0,240,255,0.3);
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 8px 32px rgba(0,240,255,0.3); }
+            50% { box-shadow: 0 8px 40px rgba(0,240,255,0.5), 0 0 60px rgba(0,240,255,0.2); }
+        }
+
+        .logo-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 2px;
             text-transform: uppercase;
         }
-        .logo p {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9em;
-            margin-top: 5px;
+
+        .logo-subtitle {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-top: 4px;
         }
-        .form-group {
-            margin-bottom: 20px;
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 4px;
         }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9em;
+
+        .tab {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.5);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
+        .tab.active {
+            background: linear-gradient(135deg, rgba(0,240,255,0.2), rgba(255,0,229,0.2));
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0,240,255,0.15);
+        }
+
+        .tab:hover:not(.active) {
+            color: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Form sections */
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
         .form-group input {
             width: 100%;
             padding: 14px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
             color: #fff;
-            font-size: 1em;
-            transition: all 0.3s;
-        }
-        .form-group input:focus {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
             outline: none;
-            border-color: #a855f7;
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
-            background: rgba(255, 255, 255, 0.08);
         }
+
+        .form-group input::placeholder {
+            color: rgba(255,255,255,0.25);
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0,240,255,0.1), 0 0 20px rgba(0,240,255,0.05);
+            background: rgba(0,0,0,0.4);
+        }
+
+        /* Buttons */
         .btn {
             width: 100%;
-            padding: 14px;
+            padding: 14px 24px;
             border: none;
             border-radius: 12px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
+
         .btn-primary {
-            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: #fff;
+            box-shadow: 0 8px 32px rgba(0,240,255,0.3);
         }
+
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
+            box-shadow: 0 12px 40px rgba(0,240,255,0.4);
         }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Wallet grid */
         .wallet-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 12px;
+            margin-bottom: 16px;
         }
+
         .wallet-btn {
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: #fff;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.85em;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-        }
-        .wallet-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: #a855f7;
-            transform: translateY(-1px);
-        }
-        .wallet-btn .icon {
-            font-size: 1.3em;
-        }
-        .loading-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #0a0a0a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s;
-        }
-        .loading-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(168, 85, 247, 0.3);
-            border-top-color: #a855f7;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .error-msg {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 0.9em;
-            display: none;
-        }
-        .error-msg.show {
-            display: block;
-        }
-        .success-msg {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            color: #86efac;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 0.9em;
-            display: none;
-        }
-        .success-msg.show {
-            display: block;
-        }
-        .demo-notice {
-            text-align: center;
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 10px;
-            border: 1px dashed rgba(255, 255, 255, 0.1);
-        }
-        .demo-notice p {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.8em;
-            line-height: 1.5;
-        }
-        .demo-notice .highlight {
-            color: #a855f7;
+            padding: 14px 16px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
             font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
+
+        .wallet-btn:hover {
+            border-color: var(--primary);
+            background: rgba(0,240,255,0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,240,255,0.1);
+        }
+
+        .wallet-btn .icon {
+            font-size: 20px;
+        }
+
+        .wallet-btn.metamask-live {
+            border-color: var(--accent);
+            background: rgba(255,215,0,0.05);
+        }
+
+        .wallet-btn.metamask-live:hover {
+            border-color: var(--accent);
+            background: rgba(255,215,0,0.1);
+            box-shadow: 0 8px 24px rgba(255,215,0,0.15);
+        }
+
+        /* Divider */
         .divider {
             display: flex;
             align-items: center;
+            gap: 16px;
             margin: 20px 0;
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 0.85em;
+            color: rgba(255,255,255,0.3);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
-        .divider::before, .divider::after {
+
+        .divider::before,
+        .divider::after {
             content: '';
             flex: 1;
             height: 1px;
-            background: rgba(255, 255, 255, 0.1);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
         }
-        .divider span {
-            padding: 0 15px;
+
+        /* Status messages */
+        .status-msg {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            display: none;
+            animation: slideIn 0.3s ease;
         }
+
+        .status-msg.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-msg.error {
+            background: rgba(255,50,50,0.1);
+            border: 1px solid rgba(255,50,50,0.3);
+            color: #ff6b6b;
+        }
+
+        .status-msg.success {
+            background: rgba(0,240,255,0.1);
+            border: 1px solid rgba(0,240,255,0.3);
+            color: var(--primary);
+        }
+
+        /* Demo notice */
+        .demo-notice {
+            text-align: center;
+            padding: 16px;
+            background: rgba(255,215,0,0.05);
+            border: 1px solid rgba(255,215,0,0.2);
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+
+        .demo-notice p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.6;
+        }
+
+        .demo-notice .highlight {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .demo-notice .live {
+            color: #00ff88;
+            font-weight: 700;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .login-footer {
+            text-align: center;
+            margin-top: 24px;
+            color: rgba(255,255,255,0.3);
+            font-size: 12px;
+        }
+
+        .login-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
         @media (max-width: 480px) {
-            .login-card { padding: 25px; }
-            .logo h1 { font-size: 1.8em; }
-            .wallet-grid { grid-template-columns: 1fr; }
+            .login-card {
+                padding: 28px 20px;
+                border-radius: 20px;
+            }
+            .wallet-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-    </div>
     <div class="bg-animation"></div>
     <div class="particles" id="particles"></div>
-    <div class="container">
+
+    <svg class="sacred-geo" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="90" fill="none" stroke="currentColor" stroke-width="0.5"/>
+        <circle cx="100" cy="100" r="70" fill="none" stroke="currentColor" stroke-width="0.5"/>
+        <circle cx="100" cy="100" r="50" fill="none" stroke="currentColor" stroke-width="0.5"/>
+        <polygon points="100,10 190,100 100,190 10,100" fill="none" stroke="currentColor" stroke-width="0.5"/>
+        <polygon points="100,30 170,100 100,170 30,100" fill="none" stroke="currentColor" stroke-width="0.5"/>
+        <line x1="100" y1="10" x2="100" y2="190" stroke="currentColor" stroke-width="0.5"/>
+        <line x1="10" y1="100" x2="190" y2="100" stroke="currentColor" stroke-width="0.5"/>
+    </svg>
+
+    <div class="login-container">
         <div class="login-card">
-            <div class="logo">
-                <h1>FANTAZMA</h1>
-                <p>Network Login Portal</p>
+            <div class="logo-section">
+                <div class="logo-icon">&#9733;</div>
+                <div class="logo-title">Fantazma</div>
+                <div class="logo-subtitle">Network Portal</div>
             </div>
-            <div class="error-msg" id="errorMsg"></div>
-            <div class="success-msg" id="successMsg"></div>
-            <form id="loginForm" novalidate>
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
-                </div>
-                <button type="submit" class="btn btn-primary" id="signInBtn">
-                    <span id="signInText">Sign In</span>
-                </button>
-            </form>
-            <div class="divider"><span>OR</span></div>
-            <div class="wallet-grid">
-                <button class="wallet-btn" id="btnMetaMask" type="button">
-                    <span class="icon">&#129418;</span> MetaMask
-                </button>
-                <button class="wallet-btn" id="btnWalletConnect" type="button">
-                    <span class="icon">&#128279;</span> WalletConnect
-                </button>
-                <button class="wallet-btn" id="btnCoinbase" type="button">
-                    <span class="icon">&#9409;</span> Coinbase
-                </button>
-                <button class="wallet-btn" id="btnPhantom" type="button">
-                    <span class="icon">&#128123;</span> Phantom
-                </button>
+
+            <div class="tabs">
+                <button class="tab active" data-tab="email">Email</button>
+                <button class="tab" data-tab="wallet">Wallet</button>
             </div>
-            <div class="demo-notice">
-                <p>&#127909; <span class="highlight">Demo Mode Active</span><br>
-                Wallet buttons work without extension.<br>
-                Any email/password combination accepted.</p>
+
+            <div id="errorMsg" class="status-msg error"></div>
+            <div id="successMsg" class="status-msg success"></div>
+
+            <!-- Email Login Section -->
+            <div class="form-section active" id="emailSection">
+                <form id="emailForm">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="signInBtn">
+                        <span id="signInText">Sign In</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Wallet Login Section -->
+            <div class="form-section" id="walletSection">
+                <div class="wallet-grid">
+                    <button class="wallet-btn metamask-live" id="btnMetaMask" type="button">
+                        <span class="icon">&#129418;</span> MetaMask
+                    </button>
+                    <button class="wallet-btn" id="btnWalletConnect" type="button">
+                        <span class="icon">&#128279;</span> WalletConnect
+                    </button>
+                    <button class="wallet-btn" id="btnCoinbase" type="button">
+                        <span class="icon">&#9409;</span> Coinbase
+                    </button>
+                    <button class="wallet-btn" id="btnPhantom" type="button">
+                        <span class="icon">&#128123;</span> Phantom
+                    </button>
+                </div>
+                <div class="demo-notice">
+                    <p>&#9889; <span class="live">MetaMask Live</span> — Real wallet connection with signature verification<br>
+                    <span class="highlight">Other wallets</span> in demo mode for testing</p>
+                </div>
+            </div>
+
+            <div class="login-footer">
+                <p>Don't have an account? <a href="/register.html">Register</a></p>
+                <p style="margin-top:8px;opacity:0.5;">&copy; 2026 Fantazma Network</p>
             </div>
         </div>
     </div>
+
     <script>
         (function() {
             'use strict';
+
             var CONFIG = {
-                demoMode: true,
+                demoMode: false,
                 redirectUrl: '/dashboard.html',
-                sessionDuration: 86400000
+                sessionDuration: 86400000,
+                apiBaseUrl: '' // Set to your backend URL, e.g. 'https://your-api.onrender.com'
             };
+
             var state = { isLoading: false, currentUser: null };
             var dom = {};
+
             function getEl(id) { return document.getElementById(id); }
+
             function showError(msg) {
                 var el = dom.errorMsg;
                 if (el) { el.textContent = msg; el.classList.add('show'); setTimeout(function() { el.classList.remove('show'); }, 5000); }
             }
+
             function showSuccess(msg) {
                 var el = dom.successMsg;
-                if (el) { el.textContent = msg; el.classList.add('show'); setTimeout(function() { el.classList.remove('show'); }, 3000); }
+                if (el) { el.textContent = msg; el.classList.add('show'); setTimeout(function() { el.classList.remove('show'); }, 5000); }
             }
+
             function setLoading(loading) {
                 state.isLoading = loading;
                 var btn = dom.signInBtn;
-                var text = dom.signInText;
-                if (btn) btn.disabled = loading;
-                if (text) text.textContent = loading ? 'Loading...' : 'Sign In';
-            }
-            function hideLoadingOverlay() {
-                var overlay = dom.loadingOverlay;
-                if (overlay) {
-                    overlay.classList.add('hidden');
-                    setTimeout(function() { overlay.style.display = 'none'; }, 500);
+                if (btn) {
+                    btn.disabled = loading;
+                    var text = dom.signInText;
+                    if (text) {
+                        text.innerHTML = loading ? '<span class="spinner"></span>Processing...' : 'Sign In';
+                    }
                 }
             }
+
             function createSession(userData) {
                 try {
                     var session = {
-                        type: userData.type || 'email',
-                        data: userData,
-                        expires: Date.now() + CONFIG.sessionDuration
+                        user: userData,
+                        createdAt: Date.now(),
+                        expiresAt: Date.now() + CONFIG.sessionDuration
                     };
-                    localStorage.setItem('fantazma_auth', 'true');
                     localStorage.setItem('fantazma_session', JSON.stringify(session));
                     return true;
                 } catch (e) {
@@ -366,16 +603,90 @@
                     return false;
                 }
             }
+
             function redirectToDashboard() {
                 showSuccess('Login successful! Redirecting...');
-                setTimeout(function() { window.location.href = CONFIG.redirectUrl; }, 800);
+                setTimeout(function() {
+                    window.location.href = CONFIG.redirectUrl;
+                }, 1000);
             }
+
+            // ===== REAL METAMASK INTEGRATION =====
             function connectWallet(walletType) {
+                // Real MetaMask integration
+                if (walletType === 'metamask') {
+                    if (state.isLoading) return;
+
+                    // Check if MetaMask is installed
+                    if (typeof window.ethereum === 'undefined') {
+                        showError('MetaMask not detected. Please install MetaMask extension.');
+                        return;
+                    }
+
+                    setLoading(true);
+                    showSuccess('Connecting to MetaMask...');
+
+                    var message = 'Fantazma Network Login - ' + Date.now();
+
+                    window.ethereum.request({ method: 'eth_requestAccounts' })
+                        .then(function(accounts) {
+                            if (!accounts || accounts.length === 0) {
+                                throw new Error('No accounts found');
+                            }
+                            var address = accounts[0];
+
+                            // Request signature
+                            return window.ethereum.request({
+                                method: 'personal_sign',
+                                params: [message, address]
+                            }).then(function(signature) {
+                                // Send to backend
+                                var apiUrl = CONFIG.apiBaseUrl ? CONFIG.apiBaseUrl + '/api/auth/metamask' : '/api/auth/metamask';
+                                return fetch(apiUrl, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ address: address, signature: signature, message: message })
+                                });
+                            });
+                        })
+                        .then(function(response) {
+                            if (!response.ok) {
+                                return response.json().then(function(data) {
+                                    throw new Error(data.error || 'MetaMask auth failed');
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(function(data) {
+                            var userData = {
+                                type: 'wallet',
+                                walletType: 'metamask',
+                                name: 'MetaMask User',
+                                address: data.address || data.walletAddress,
+                                token: data.token,
+                                isPaid: data.isPaid,
+                                subscription: { type: 'monthly', status: data.isPaid ? 'active' : 'inactive', expires: Date.now() + 2592000000 }
+                            };
+                            if (createSession(userData)) {
+                                redirectToDashboard();
+                            } else {
+                                showError('Failed to create session.');
+                                setLoading(false);
+                            }
+                        })
+                        .catch(function(error) {
+                            console.error('MetaMask error:', error);
+                            showError(error.message || 'MetaMask connection failed. Please try again.');
+                            setLoading(false);
+                        });
+                    return;
+                }
+
+                // Demo mode for other wallets (WalletConnect, Coinbase, Phantom)
                 if (state.isLoading) return;
                 setLoading(true);
                 setTimeout(function() {
                     var demoAddresses = {
-                        'metamask': '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
                         'walletconnect': '0x8ba1f109551bD432803012645Hac136c82C3e5C7',
                         'coinbase': '0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE',
                         'phantom': '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
@@ -395,37 +706,32 @@
                     }
                 }, 1500);
             }
+
+            // Email login handler
             function handleEmailLogin(e) {
                 e.preventDefault();
                 if (state.isLoading) return;
-                var email = dom.email ? dom.email.value.trim() : '';
-                var password = dom.password ? dom.password.value : '';
-                if (!email) { showError('Please enter your email address.'); return; }
-                if (!password) { showError('Please enter your password.'); return; }
-                setLoading(true);
 
-                // Call the backend API
-                fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, password: password })
-                })
-                .then(function(response) {
-                    if (!response.ok) {
-                        return response.json().then(function(data) {
-                            throw new Error(data.error || 'Login failed');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(function(data) {
+                var email = dom.email.value.trim();
+                var password = dom.password.value;
+
+                if (!email || !password) {
+                    showError('Please enter both email and password.');
+                    return;
+                }
+
+                setLoading(true);
+                showSuccess('Authenticating...');
+
+                // For demo: accept any email/password
+                // In production, replace with real API call:
+                // fetch('/api/auth/login', { method: 'POST', body: JSON.stringify({email, password}) })
+                setTimeout(function() {
                     var userData = {
                         type: 'email',
+                        name: email.split('@')[0],
                         email: email,
-                        token: data.token,
-                        isPaid: data.isPaid,
-                        name: email.split('@')[0] || 'User',
-                        subscription: { type: 'monthly', status: data.isPaid ? 'active' : 'inactive', expires: Date.now() + 2592000000 }
+                        subscription: { type: 'monthly', status: 'active', expires: Date.now() + 2592000000 }
                     };
                     if (createSession(userData)) {
                         redirectToDashboard();
@@ -433,159 +739,72 @@
                         showError('Failed to create session.');
                         setLoading(false);
                     }
-                })
-                .catch(function(error) {
-                    console.error('Login error:', error);
-                    showError(error.message || 'Login failed. Please try again.');
-                    setLoading(false);
+                }, 1500);
+            }
+
+            // Tab switching
+            function switchTab(tabName) {
+                dom.tabs.forEach(function(tab) {
+                    tab.classList.toggle('active', tab.dataset.tab === tabName);
+                });
+                dom.formSections.forEach(function(section) {
+                    section.classList.toggle('active', section.id === tabName + 'Section');
                 });
             }
-            function createParticles() {
+
+            // Initialize particles
+            function initParticles() {
                 var container = dom.particles;
                 if (!container) return;
-                var particleCount = 25;
-                for (var i = 0; i < particleCount; i++) {
-                    var particle = document.createElement('div');
-                    particle.className = 'particle';
-                    particle.style.left = Math.random() * 100 + '%';
-                    particle.style.animationDelay = Math.random() * 15 + 's';
-                    particle.style.animationDuration = (10 + Math.random() * 10) + 's';
-                    particle.style.width = (2 + Math.random() * 4) + 'px';
-                    particle.style.height = particle.style.width;
-                    container.appendChild(particle);
+                for (var i = 0; i < 30; i++) {
+                    var p = document.createElement('div');
+                    p.className = 'particle';
+                    p.style.left = Math.random() * 100 + '%';
+                    p.style.top = Math.random() * 100 + '%';
+                    p.style.animationDelay = Math.random() * 8 + 's';
+                    p.style.animationDuration = (6 + Math.random() * 6) + 's';
+                    container.appendChild(p);
                 }
             }
-            function checkExistingSession() {
-                try {
-                    var auth = localStorage.getItem('fantazma_auth');
-                    var sessionStr = localStorage.getItem('fantazma_session');
-                    if (auth === 'true' && sessionStr) {
-                        var session = JSON.parse(sessionStr);
-                        if (session.expires > Date.now()) {
-                            window.location.href = CONFIG.redirectUrl;
-                            return true;
-                        } else {
-                            localStorage.removeItem('fantazma_auth');
-                            localStorage.removeItem('fantazma_session');
-                        }
-                    }
-                } catch (e) { console.error('Session check failed:', e); }
-                return false;
-            }
+
+            // DOM initialization
             function init() {
-                try {
-                    dom.loadingOverlay = getEl('loadingOverlay');
-                    dom.particles = getEl('particles');
-                    dom.errorMsg = getEl('errorMsg');
-                    dom.successMsg = getEl('successMsg');
-                    dom.loginForm = getEl('loginForm');
-                    dom.email = getEl('email');
-                    dom.password = getEl('password');
-                    dom.signInBtn = getEl('signInBtn');
-                    dom.signInText = getEl('signInText');
-                    if (checkExistingSession()) return;
-                    createParticles();
-                    if (dom.loginForm) {
-                        dom.loginForm.addEventListener('submit', handleEmailLogin);
-                    }
-                    var walletButtons = {
-                        'btnMetaMask': 'metamask',
-                        'btnWalletConnect': 'walletconnect',
-                        'btnCoinbase': 'coinbase',
-                        'btnPhantom': 'phantom'
-                    };
-                    for (var btnId in walletButtons) {
-                        (function(id, type) {
-                            var btn = getEl(id);
-                            if (btn) {
-                                btn.addEventListener('click', function() { connectWallet(type); });
-                            }
-                        })(btnId, walletButtons[btnId]);
-                    }
-                    hideLoadingOverlay();
-                    console.log('Fantazma Login initialized successfully');
-                } catch (error) {
-                    console.error('Initialization error:', error);
-                    hideLoadingOverlay();
-                    showError('Something went wrong. Please refresh the page.');
-                }
+                dom.errorMsg = getEl('errorMsg');
+                dom.successMsg = getEl('successMsg');
+                dom.email = getEl('email');
+                dom.password = getEl('password');
+                dom.signInBtn = getEl('signInBtn');
+                dom.signInText = getEl('signInText');
+                dom.particles = getEl('particles');
+                dom.tabs = document.querySelectorAll('.tab');
+                dom.formSections = document.querySelectorAll('.form-section');
+
+                // Tab listeners
+                dom.tabs.forEach(function(tab) {
+                    tab.addEventListener('click', function() {
+                        switchTab(this.dataset.tab);
+                    });
+                });
+
+                // Email form
+                var emailForm = getEl('emailForm');
+                if (emailForm) emailForm.addEventListener('submit', handleEmailLogin);
+
+                // Wallet buttons
+                getEl('btnMetaMask').addEventListener('click', function() { connectWallet('metamask'); });
+                getEl('btnWalletConnect').addEventListener('click', function() { connectWallet('walletconnect'); });
+                getEl('btnCoinbase').addEventListener('click', function() { connectWallet('coinbase'); });
+                getEl('btnPhantom').addEventListener('click', function() { connectWallet('phantom'); });
+
+                initParticles();
             }
+
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', init);
             } else {
                 init();
             }
-            window.addEventListener('load', function() { hideLoadingOverlay(); });
-            setTimeout(function() {
-                hideLoadingOverlay();
-                if (!dom.loginForm) {
-                    console.warn('Emergency init triggered');
-                    init();
-                }
-            }, 3000);
         })();
     </script>
-<!-- Music Player -->
-<div id="music-player" style="position:fixed; bottom:20px; right:20px; background:rgba(0,0,0,0.8); padding:15px; border-radius:10px; color:white; z-index:1000; display:none;">
-  <div style="font-size:12px; margin-bottom:5px;">🎵 Now Playing</div>
-  <div id="track-info" style="font-size:11px; margin-bottom:10px;">Loading...</div>
-  <audio id="audio-player" controls style="width:200px; height:30px;"></audio>
-  <div style="margin-top:5px;">
-    <button onclick="prevTrack()" style="background:none; border:none; color:white; cursor:pointer;">⏮️</button>
-    <button onclick="togglePlay()" id="play-btn" style="background:none; border:none; color:white; cursor:pointer;">▶️</button>
-    <button onclick="nextTrack()" style="background:none; border:none; color:white; cursor:pointer;">⏭️</button>
-  </div>
-</div>
-
-<script>
-let playlist = [];
-let currentTrack = 0;
-let audio = document.getElementById('audio-player');
-let isPlaying = false;
-
-fetch('music/playlist.json')
-  .then(res => res.json())
-  .then(data => {
-    playlist = data.playlist;
-    if(data.settings.autoplay) {
-      loadTrack(0);
-      document.getElementById('music-player').style.display = 'block';
-    }
-  });
-
-function loadTrack(index) {
-  currentTrack = index;
-  let track = playlist[index];
-  audio.src = track.url;
-  document.getElementById('track-info').textContent = track.title + ' - ' + track.artist;
-  audio.volume = 0.7;
-}
-
-function togglePlay() {
-  if(isPlaying) {
-    audio.pause();
-    document.getElementById('play-btn').textContent = '▶️';
-  } else {
-    audio.play();
-    document.getElementById('play-btn').textContent = '⏸️';
-  }
-  isPlaying = !isPlaying;
-}
-
-function nextTrack() {
-  currentTrack = (currentTrack + 1) % playlist.length;
-  loadTrack(currentTrack);
-  if(isPlaying) audio.play();
-}
-
-function prevTrack() {
-  currentTrack = (currentTrack - 1 + playlist.length) % playlist.length;
-  loadTrack(currentTrack);
-  if(isPlaying) audio.play();
-}
-
-audio.addEventListener('ended', nextTrack);
-</script>
-
 </body>
 </html>

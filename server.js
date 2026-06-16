@@ -130,7 +130,8 @@ app.use(cors({
 }));
 
 // Static file serving with caching headers (Fix #8)
-app.use(express.static(path.join(__dirname, 'public'), {
+app.use(express.static(path.join(__dirname, '.'), {
+
   maxAge: '1d',
   etag: true
 }));

@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+const MONGODB_URI = process.env.MONGODB_URI;
 // ============================================
 // FANTAZMA NETWORK — Combined Server
 // Serves frontend static files + runs backend API
@@ -409,6 +411,26 @@ app.use((err, req, res, next) => {
 // ============================================
 // START SERVER
 // ============================================
+// ============================================
+// MONGODB CONNECTION
+// ============================================
+
+async function connectDB() {
+    try {
+        if (!MONGODB_URI) {
+            console.log('[MongoDB] No URI found, running in-memory mode');
+            return;
+        }
+        console.log('[MongoDB] Connecting...');
+        await mongoose.connect(MONGODB_URI);
+        console.log('[MongoDB] ✅ Connected successfully!');
+    } catch (error) {
+        console.error('[MongoDB] ❌ Connection failed:', error.message);
+        console.log('[MongoDB] Falling back to in-memory mode...');
+    }
+}
+
+connectDB();
 
 app.listen(PORT, () => {
     console.log('');

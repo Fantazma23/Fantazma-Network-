@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const { ethers } = require('ethers');
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -410,6 +411,52 @@ app.post('/api/login', loginLimiter, async (req, res) => {
 app.get('/api/verify', authenticateToken, (req, res) => {
   res.json({ valid: true, user: req.user });
 });
+// ============================================================================
+// Routes: MetaMask Wallet Authentication
+// ============================================================================
+
+app.post('/api/auth/metamask', loginLimiter, async (req, res) => {
+  try {
+    const { address, signature, message } = req.body;
+
+    if (!address || !signature || !message) {
+      return res.status(400).json({ error: 'Missing wallet data' });
+    }
+
+    // Validate Ethereum address format
+    if (!ethers.isAddress(address)) {
+      return res.status(400).json({ error: 'Invalid Ethereum address' });
+    }
+
+    // Verify signature
+    const recoveredAddress = ethers.verifyMessage(message, signature);
+    
+    if (recoveredAddress.toLowerCase() !== address.toLowerCase()) {
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+
+    // Get or create user
+    const user = users.get(address) || { 
+      email: address, 
+      wallet: address,
+      isPaid: false 
+    };
+    users.set(address, user);
+
+    const token = jwt.sign(
+      { email: address, wallet: address, isPaid: user.isPaid },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    console.log(`🔐 MetaMask authenticated: ${address}`);
+    res.json({ token, isPaid: user.isPaid, address });
+  } catch (err) {
+    console.error('MetaMask auth error:', err);
+    res.status(500).json({ error: 'Wallet authentication failed' });
+  }
+});
+
 
 // ============================================================================
 // Socket.io Chat with Message History (Fix #4)

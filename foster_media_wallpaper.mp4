@@ -1,0 +1,9 @@
+<body>
+  <!-- 🎬 LIVE WALLPAPER BACKGROUND -->
+  <video id="foster-bg" autoplay muted loop playsinline preload="auto"
+    style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+           object-fit: cover; z-index: -1; opacity: 0.5; pointer-events: none;">
+    <source src="foster_media_wallpaper.mp4" type="video/mp4">
+  </video>
+
+  <!-- Your existing content goes here -->

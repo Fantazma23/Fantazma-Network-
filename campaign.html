@@ -271,6 +271,9 @@
             padding: 32px;
             transition: all 0.3s;
             cursor: pointer;
+            text-decoration: none;
+            color: #fff;
+            display: block;
         }
 
         .policy-card:hover {
@@ -482,9 +485,9 @@
     <!-- Navigation -->
     <nav class="nav">
         <div class="nav-inner">
-            <a href="/campaign" class="nav-logo">FOSTER<span>2028</span></a>
+            <a href="/campaign.html" class="nav-logo">FOSTER<span>2028</span></a>
             <div class="nav-links">
-                <a href="#policy" class="nav-link">Policy</a>
+                <a href="/policy.html" class="nav-link">Policy</a>
                 <a href="#donate" class="nav-link">Donate</a>
                 <a href="#join" class="nav-link">Join</a>
                 <a href="#stream" class="nav-link">Live</a>
@@ -509,38 +512,38 @@
     <!-- Policy Section -->
     <section class="section" id="policy">
         <h2 class="section-title">Our Vision</h2>
-        <p class="section-subtitle">Building a nation where every citizen has the opportunity to thrive</p>
+        <p class="section-subtitle">Building a nation where every citizen has the opportunity to thrive. Tap any pillar for full details.</p>
         <div class="policy-grid">
-            <div class="policy-card">
+            <a href="/policy.html#justice" class="policy-card">
                 <div class="policy-icon">🏛️</div>
                 <h3 class="policy-title">Criminal Justice Reform</h3>
-                <p class="policy-desc">Second chance programs, rehabilitation over incarceration, and restoring voting rights for reformed citizens.</p>
-            </div>
-            <div class="policy-card">
+                <p class="policy-desc">End mass incarceration. Restore voting rights. Fund rehabilitation over punishment.</p>
+            </a>
+            <a href="/policy.html#economy" class="policy-card">
                 <div class="policy-icon">💰</div>
                 <h3 class="policy-title">Economic Opportunity</h3>
-                <p class="policy-desc">Living wages, small business support, and financial literacy education for all communities.</p>
-            </div>
-            <div class="policy-card">
+                <p class="policy-desc">Living wages, small business support, and wealth-building for all communities.</p>
+            </a>
+            <a href="/policy.html#education" class="policy-card">
                 <div class="policy-icon">📚</div>
                 <h3 class="policy-title">Education & Youth</h3>
-                <p class="policy-desc">Free community college, vocational training, and mentorship programs for at-risk youth.</p>
-            </div>
-            <div class="policy-card">
+                <p class="policy-desc">Free community college, vocational training, and ending the school-to-prison pipeline.</p>
+            </a>
+            <a href="/policy.html#healthcare" class="policy-card">
                 <div class="policy-icon">🏥</div>
                 <h3 class="policy-title">Healthcare Access</h3>
-                <p class="policy-desc">Affordable healthcare for all, mental health parity, and addiction recovery support.</p>
-            </div>
-            <div class="policy-card">
+                <p class="policy-desc">Affordable care for all, mental health parity, and addiction recovery support.</p>
+            </a>
+            <a href="/policy.html#environment" class="policy-card">
                 <div class="policy-icon">🌱</div>
                 <h3 class="policy-title">Environmental Justice</h3>
-                <p class="policy-desc">Clean energy jobs, pollution reduction in vulnerable communities, and sustainable infrastructure.</p>
-            </div>
-            <div class="policy-card">
+                <p class="policy-desc">Clean energy jobs, pollution reduction, and sustainable infrastructure.</p>
+            </a>
+            <a href="/policy.html#unity" class="policy-card">
                 <div class="policy-icon">🤝</div>
                 <h3 class="policy-title">Unity & Healing</h3>
-                <p class="policy-desc">Bridging political divides, community dialogue, and restoring faith in American institutions.</p>
-            </div>
+                <p class="policy-desc">Bridge political divides, restore institutional trust, and national service.</p>
+            </a>
         </div>
     </section>
 
@@ -602,7 +605,7 @@
                 <input type="text" id="zip" placeholder="12345" maxlength="5">
             </div>
             <div class="form-group">
-                <label for="interest">I'm interested in</label>
+                <label for="interest">I am interested in</label>
                 <select id="interest">
                     <option value="">Select an option</option>
                     <option value="volunteer">Volunteering</option>
@@ -636,7 +639,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-links">
-            <a href="#policy">Policy</a>
+            <a href="/policy.html">Policy</a>
             <a href="#donate">Donate</a>
             <a href="#join">Join</a>
             <a href="#stream">Live</a>
@@ -651,8 +654,12 @@
         (function() {
             'use strict';
 
-            // Campaign wallet address (UPDATE THIS with your actual wallet)
-            const CAMPAIGN_WALLET = '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb';
+            // ============================================
+            // IMPORTANT: UPDATE THIS WITH YOUR REAL WALLET
+            // ============================================
+            const CAMPAIGN_WALLET = '0xYOUR_WALLET_ADDRESS_HERE';
+            // Replace 0xYOUR_WALLET_ADDRESS_HERE with your actual MetaMask address
+            // Example: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb
 
             // Donation tier selection
             var selectedAmount = 25;
@@ -687,6 +694,12 @@
                         return;
                     }
 
+                    // Check if wallet is configured
+                    if (CAMPAIGN_WALLET === '0xYOUR_WALLET_ADDRESS_HERE') {
+                        showStatus('donateStatus', 'Campaign wallet not yet configured. Please check back soon or use WinRed.', true);
+                        return;
+                    }
+
                     donateBtn.textContent = 'Connecting to MetaMask...';
 
                     window.ethereum.request({ method: 'eth_requestAccounts' })
@@ -696,7 +709,6 @@
                             }
 
                             var from = accounts[0];
-                            var amountEth = (selectedAmount / 3000).toFixed(6); // Approximate ETH conversion
                             var amountWei = '0x' + (selectedAmount * 1e18 / 3000).toString(16);
 
                             donateBtn.textContent = 'Confirm in MetaMask...';
@@ -707,14 +719,13 @@
                                     from: from,
                                     to: CAMPAIGN_WALLET,
                                     value: amountWei,
-                                    gas: '0x5208', // 21000 gas
-                                    data: '0x' + Buffer.from('Foster For President 2028 Donation').toString('hex')
+                                    gas: '0x5208'
                                 }]
                             });
                         })
                         .then(function(txHash) {
                             showStatus('donateStatus', 'Thank you! Donation sent. TX: ' + txHash.substring(0, 20) + '...', false);
-                            donateBtn.textContent = 'Donation Complete! 🎉';
+                            donateBtn.textContent = 'Donation Complete!';
 
                             // Save donation to backend
                             fetch('/api/campaign/donate', {
@@ -782,7 +793,7 @@
                     })
                     .then(function(data) {
                         showStatus('signupStatus', 'Welcome to the movement! Check your email for confirmation.', false);
-                        signupBtn.textContent = 'Joined! ✅';
+                        signupBtn.textContent = 'Joined!';
 
                         // Clear form
                         document.getElementById('firstName').value = '';

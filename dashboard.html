@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+9<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -771,5 +771,67 @@
             setTimeout(function() { hideLoading(); }, 3000);
         })();
     </script>
+<!-- Music Player -->
+<div id="music-player" style="position:fixed; bottom:20px; right:20px; background:rgba(0,0,0,0.8); padding:15px; border-radius:10px; color:white; z-index:1000; display:none;">
+  <div style="font-size:12px; margin-bottom:5px;">🎵 Now Playing</div>
+  <div id="track-info" style="font-size:11px; margin-bottom:10px;">Loading...</div>
+  <audio id="audio-player" controls style="width:200px; height:30px;"></audio>
+  <div style="margin-top:5px;">
+    <button onclick="prevTrack()" style="background:none; border:none; color:white; cursor:pointer;">⏮️</button>
+    <button onclick="togglePlay()" id="play-btn" style="background:none; border:none; color:white; cursor:pointer;">▶️</button>
+    <button onclick="nextTrack()" style="background:none; border:none; color:white; cursor:pointer;">⏭️</button>
+  </div>
+</div>
+
+<script>
+let playlist = [];
+let currentTrack = 0;
+let audio = document.getElementById('audio-player');
+let isPlaying = false;
+
+fetch('music/playlist.json')
+  .then(res => res.json())
+  .then(data => {
+    playlist = data.playlist;
+    if(data.settings.autoplay) {
+      loadTrack(0);
+      document.getElementById('music-player').style.display = 'block';
+    }
+  });
+
+function loadTrack(index) {
+  currentTrack = index;
+  let track = playlist[index];
+  audio.src = track.url;
+  document.getElementById('track-info').textContent = track.title + ' - ' + track.artist;
+  audio.volume = 0.7;
+}
+
+function togglePlay() {
+  if(isPlaying) {
+    audio.pause();
+    document.getElementById('play-btn').textContent = '▶️';
+  } else {
+    audio.play();
+    document.getElementById('play-btn').textContent = '⏸️';
+  }
+  isPlaying = !isPlaying;
+}
+
+function nextTrack() {
+  currentTrack = (currentTrack + 1) % playlist.length;
+  loadTrack(currentTrack);
+  if(isPlaying) audio.play();
+}
+
+function prevTrack() {
+  currentTrack = (currentTrack - 1 + playlist.length) % playlist.length;
+  loadTrack(currentTrack);
+  if(isPlaying) audio.play();
+}
+
+audio.addEventListener('ended', nextTrack);
+</script>
+
 </body>
 </html>

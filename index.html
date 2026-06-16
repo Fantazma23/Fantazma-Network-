@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantazma Network</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 🎬 LIVE WALLPAPER BACKGROUND */
+        #foster-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -2;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* Dark overlay so text is readable */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(20,0,40,0.5) 100%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Sacred geometry subtle pattern */
+        .sacred-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255,0,100,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(0,200,255,0.05) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 20px 20px;
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, #ff0040, #ff8c00, #ffd700, #ff0040);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 6s ease infinite;
+            text-shadow: 0 0 30px rgba(255,0,64,0.3);
+            letter-spacing: 4px;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-top: 10px;
+            letter-spacing: 2px;
+        }
+
+        /* Main container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, #ff0040, #ff8c00, #ffd700, #ff0040);
+            border-radius: 20px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.4s ease;
+        }
+
+        .card:hover::before {
+            opacity: 0.3;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255,0,64,0.2);
+            border-color: rgba(255,0,64,0.3);
+        }
+
+        .card h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            color: #ffd700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p {
+            color: #ccc;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* Login form */
+        .login-form input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .login-form input:focus {
+            border-color: #ff0040;
+            box-shadow: 0 0 15px rgba(255,0,64,0.3);
+        }
+
+        .login-form input::placeholder {
+            color: #666;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 15px;
+            background: linear-gradient(135deg, #ff0040, #ff8c00);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(255,0,64,0.4);
+        }
+
+        /* Crypto prices */
+        .crypto-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .crypto-price:last-child {
+            border-bottom: none;
+        }
+
+        .crypto-name {
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .crypto-value {
+            font-family: 'Orbitron', sans-serif;
+            color: #00ff88;
+        }
+
+        .crypto-change {
+            font-size: 0.85rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .positive {
+            background: rgba(0,255,136,0.15);
+            color: #00ff88;
+        }
+
+        .negative {
+            background: rgba(255,0,64,0.15);
+            color: #ff0040;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: #ff8c00;
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            .container {
+                grid-template-columns: 1fr;
+                padding: 15px;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #ff0040;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 🎬 LIVE WALLPAPER VIDEO -->
+    <video id="foster-bg" autoplay muted loop playsinline preload="auto">
+        <source src="foster_media_wallpaper.mp4" type="video/mp4">
+    </video>
+
+    <!-- Dark overlay for readability -->
+    <div class="overlay"></div>
+    <div class="sacred-pattern"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1>FANTAZMA NETWORK</h1>
+        <p>Entertainment • Media • Crypto • Sacred Geometry</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+
+        <!-- Login Card -->
+        <div class="card">
+            <h2>🔐 Member Login</h2>
+            <form class="login-form" onsubmit="handleLogin(event)">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit" class="btn">Enter the Nexus</button>
+            </form>
+            <p style="margin-top: 15px; font-size: 0.85rem; text-align: center;">
+                <a href="#" style="color: #ff8c00;">Create Account</a> | 
+                <a href="#" style="color: #ff8c00;">Forgot Password?</a>
+            </p>
+        </div>
+
+        <!-- Crypto Prices -->
+        <div class="card">
+            <h2>💰 Live Crypto</h2>
+            <div class="crypto-price">
+                <span class="crypto-name">₿ Bitcoin</span>
+                <span>
+                    <span class="crypto-value" id="btc-price">$105,420</span>
+                    <span class="crypto-change positive" id="btc-change">+2.4%</span>
+                </span>
+            </div>
+            <div class="crypto-price">
+                <span class="crypto-name">Ξ Ethereum</span>
+                <span>
+                    <span class="crypto-value" id="eth-price">$3,850</span>
+                    <span class="crypto-change negative" id="eth-change">-1.2%</span>
+                </span>
+            </div>
+            <div class="crypto-price">
+                <span class="crypto-name">🜔 AOC Token</span>
+                <span>
+                    <span class="crypto-value" id="aoc-price">$0.0042</span>
+                    <span class="crypto-change positive" id="aoc-change">+15.7%</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Live Stream -->
+        <div class="card">
+            <h2>📡 Live Broadcast</h2>
+            <div style="background: rgba(0,0,0,0.5); border-radius: 10px; height: 150px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                <span style="color: #666;">🎥 Stream Offline</span>
+            </div>
+            <p>Next broadcast: <strong style="color: #ffd700;">Daily at 8:00 PM EST</strong></p>
+            <button class="btn" style="margin-top: 15px; font-size: 0.9rem;">Join Stream</button>
+        </div>
+
+        <!-- MetaMask Connect -->
+        <div class="card">
+            <h2>🦊 MetaMask</h2>
+            <p>Connect your wallet to access exclusive content and AOC rewards.</p>
+            <button class="btn" onclick="connectMetaMask()" style="margin-top: 15px;">
+                Connect Wallet
+            </button>
+            <p id="wallet-address" style="margin-top: 10px; font-size: 0.85rem; color: #00ff88; word-break: break-all;"></p>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>🙏 Foster Ent. Media Productions © 2026</p>
+        <p style="margin-top: 10px;">
+            <a href="#">Terms</a> • <a href="#">Privacy</a> • <a href="#">Contact</a>
+        </p>
+    </div>
+
+    <script>
+        // Login handler
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            alert('Welcome to the Nexus, ' + user + '! 🙏🔐🦊');
+        }
+
+        // MetaMask connect
+        async function connectMetaMask() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    document.getElementById('wallet-address').textContent = 'Connected: ' + accounts[0].slice(0, 6) + '...' + accounts[0].slice(-4);
+                } catch (err) {
+                    alert('Connection cancelled');
+                }
+            } else {
+                alert('Please install MetaMask! 🦊');
+            }
+        }
+
+        // Force video playback
+        const video = document.getElementById('foster-bg');
+        video.play().catch(() => {
+            document.addEventListener('click', () => video.play(), { once: true });
+        });
+    </script>
+
+</body>
+</html>

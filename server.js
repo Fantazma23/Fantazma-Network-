@@ -314,6 +314,103 @@ app.post('/api/webhook-crypto', express.raw({ type: 'application/json' }), async
 // ============================================================================
 // Routes: Authentication
 // ============================================================================
+// Routes: Authentication
+// ============================================================================
+
+app.post('/api/register', loginLimiter, async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !validateEmail(email)) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const existingUser = users.get(email);
+    if (existingUser && existingUser.password) {
+      return res.status(409).json({ error: 'User already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = { 
+      email, 
+      password: hashedPassword,
+      isPaid: false 
+    };
+    users.set(email, user);
+
+    const token = jwt.sign(
+      { email, isPaid: false },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    console.log(`📝 New user registered: ${email}`);
+    res.json({ token, isPaid: false });
+  } catch (err) {
+    console.error('Registration error:', err);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+app.post('/api/login', loginLimiter, async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !validateEmail(email)) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+
+    const user = users.get(email);
+    
+    // If user doesn't exist, create basic account (for demo)
+    if (!user) {
+      const newUser = { email, isPaid: false };
+      users.set(email, newUser);
+      
+      const token = jwt.sign(
+        { email, isPaid: false },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+      
+      console.log(`🔓 New user logged in (no password): ${email}`);
+      return res.json({ token, isPaid: false });
+    }
+
+    // If user has a password, verify it
+    if (user.password) {
+      if (!password) {
+        return res.status(400).json({ error: 'Password required' });
+      }
+      
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) {
+        return res.status(401).json({ error: 'Invalid password' });
+      }
+    }
+
+    const token = jwt.sign(
+      { email, isPaid: user.isPaid || false },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    console.log(`🔓 User logged in: ${email}`);
+    res.json({ token, isPaid: user.isPaid || false });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+app.get('/api/verify', authenticateToken, (req, res) => {
+  res.json({ valid: true, user: req.user });
+});
+
 app.post('/api/login', loginLimiter, (req, res) => {
   try {
     const { email } = req.body;

@@ -411,37 +411,6 @@ app.get('/api/verify', authenticateToken, (req, res) => {
   res.json({ valid: true, user: req.user });
 });
 
-app.post('/api/login', loginLimiter, (req, res) => {
-  try {
-    const { email } = req.body;
-
-    if (!email || !validateEmail(email)) {
-      return res.status(400).json({ error: 'Invalid email address' });
-    }
-
-    const user = users.get(email) || { email, isPaid: false };
-    users.set(email, user);
-
-    // Token expires in 24 hours (Fix #7: Reduced from 7 days)
-    const token = jwt.sign(
-      { email, isPaid: user.isPaid },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    console.log(`🔓 User logged in: ${email}`);
-
-    res.json({ token, isPaid: user.isPaid });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Login failed' });
-  }
-});
-
-app.get('/api/verify', authenticateToken, (req, res) => {
-  res.json({ valid: true, user: req.user });
-});
-
 // ============================================================================
 // Socket.io Chat with Message History (Fix #4)
 // ============================================================================

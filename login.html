@@ -350,7 +350,7 @@
                     overlay.classList.add('hidden');
                     setTimeout(function() { overlay.style.display = 'none'; }, 500);
                 }
-            
+            }
             function createSession(userData) {
                 try {
                     var session = {
@@ -396,51 +396,49 @@
                 }, 1500);
             }
             function handleEmailLogin(e) {
-    e.preventDefault();
-    if (state.isLoading) return;
-    var email = dom.email ? dom.email.value.trim() : '';
-    var password = dom.password ? dom.password.value : '';
-    if (!email) { showError('Please enter your email address.'); return; }
-    if (!password) { showError('Please enter your password.'); return; }
-    setLoading(true);
-    
-    // Call the backend API
-    fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, password: password })
-    })
-    .then(function(response) {
-        if (!response.ok) {
-            return response.json().then(function(data) {
-                throw new Error(data.error || 'Login failed');
-            });
-        }
-        return response.json();
-    })
-    .then(function(data) {
-        var userData = {
-            type: 'email',
-            email: email,
-            token: data.token,
-            isPaid: data.isPaid,
-            name: email.split('@')[0] || 'User',
-            subscription: { type: 'monthly', status: data.isPaid ? 'active' : 'inactive', expires: Date.now() + 2592000000 }
-        };
-        if (createSession(userData)) {
-            redirectToDashboard();
-        } else {
-            showError('Failed to create session.');
-            setLoading(false);
-        }
-    })
-    .catch(function(error) {
-        console.error('Login error:', error);
-        showError(error.message || 'Login failed. Please try again.');
-        setLoading(false);
-    });
-}
+                e.preventDefault();
+                if (state.isLoading) return;
+                var email = dom.email ? dom.email.value.trim() : '';
+                var password = dom.password ? dom.password.value : '';
+                if (!email) { showError('Please enter your email address.'); return; }
+                if (!password) { showError('Please enter your password.'); return; }
+                setLoading(true);
 
+                // Call the backend API
+                fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: password })
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        return response.json().then(function(data) {
+                            throw new Error(data.error || 'Login failed');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    var userData = {
+                        type: 'email',
+                        email: email,
+                        token: data.token,
+                        isPaid: data.isPaid,
+                        name: email.split('@')[0] || 'User',
+                        subscription: { type: 'monthly', status: data.isPaid ? 'active' : 'inactive', expires: Date.now() + 2592000000 }
+                    };
+                    if (createSession(userData)) {
+                        redirectToDashboard();
+                    } else {
+                        showError('Failed to create session.');
+                        setLoading(false);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Login error:', error);
+                    showError(error.message || 'Login failed. Please try again.');
+                    setLoading(false);
+                });
             }
             function createParticles() {
                 var container = dom.particles;

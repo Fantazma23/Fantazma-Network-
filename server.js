@@ -1,597 +1,434 @@
-const bcrypt = require('bcryptjs');
-const { ethers } = require('ethers');
+// ============================================
+// FANTAZMA NETWORK — Combined Server
+// Serves frontend static files + runs backend API
+// ============================================
+
 const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
 const cors = require('cors');
 const path = require('path');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const fs = require('fs');
 
-// ============================================================================
-// PERFORMANCE OPTIMIZATION: Environment Variable Validation (Fix #6)
-// ============================================================================
-const requiredEnvVars = ['JWT_SECRET', 'COINBASE_API_KEY'];
-const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
-if (missingEnvVars.length > 0) {
-  console.error(`❌ Missing environment variables: ${missingEnvVars.join(', ')}`);
-  console.error('Create a .env file with: JWT_SECRET and COINBASE_API_KEY');
-  process.exit(1);
-}
-
-const app = express();
-const server = http.createServer(app);
-
-// ============================================================================
-// PERFORMANCE OPTIMIZATION: CORS Security (Fix #3)
-// ============================================================================
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-  : ['http://localhost:3000', 'http://localhost:8080'];
-
-console.log(`✅ CORS enabled for: ${allowedOrigins.join(', ')}`);
-
-const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST'],
-    credentials: true,
-    maxAge: 3600
-  },
-  // Socket.io Security (Fix #9)
-  maxHttpBufferSize: 1e6, // 1MB limit
-  transports: ['websocket', 'polling']
-});
+// ============================================
+// CONFIGURATION
+// ============================================
 
 const PORT = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || 'fantazma-super-secret-jwt-key-2026-change-in-production';
 const NODE_ENV = process.env.NODE_ENV || 'development';
-const COINBASE_API_KEY = process.env.COINBASE_API_KEY;
 
-// ============================================================================
-// PERFORMANCE OPTIMIZATION: Memory Management with TTL Cache (Fix #1)
-// ============================================================================
-class CacheWithTTL {
-  constructor(ttlMs) {
-    this.data = new Map();
-    this.ttl = ttlMs;
-    this.expirations = new Map();
-    
-    // Auto-cleanup every hour (Fix #10: Graceful Management)
-    this.cleanupInterval = setInterval(() => this.cleanup(), 60 * 60 * 1000);
-  }
+// ============================================
+// EXPRESS APP SETUP
+// ============================================
 
-  set(key, value) {
-    this.data.set(key, value);
-    const expirationTime = Date.now() + this.ttl;
-    this.expirations.set(key, expirationTime);
-  }
+const app = express();
 
-  get(key) {
-    const expirationTime = this.expirations.get(key);
-    if (expirationTime && Date.now() > expirationTime) {
-      this.data.delete(key);
-      this.expirations.delete(key);
-      return undefined;
-    }
-    return this.data.get(key);
-  }
-
-  cleanup() {
-    const now = Date.now();
-    let removed = 0;
-    for (const [key, expTime] of this.expirations.entries()) {
-      if (now > expTime) {
-        this.data.delete(key);
-        this.expirations.delete(key);
-        removed++;
-      }
-    }
-    if (removed > 0) {
-      console.log(`🧹 Cleaned up ${removed} expired cache entries`);
-    }
-  }
-
-  destroy() {
-    clearInterval(this.cleanupInterval);
-  }
-}
-
-// Initialize caches with TTL
-const users = new CacheWithTTL(7 * 24 * 60 * 60 * 1000); // 7 days
-const payments = new CacheWithTTL(30 * 24 * 60 * 60 * 1000); // 30 days
-const messageHistory = new Map(); // Room-specific message history
-
-// ============================================================================
-// PERFORMANCE OPTIMIZATION: Rate Limiting (Fix #2)
-// ============================================================================
-const rateLimit = require('express-rate-limit');
-
-const createPaymentLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 requests per window
-  message: '❌ Too many payment attempts. Please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 requests per window
-  message: '❌ Too many login attempts. Please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// ============================================================================
-// Middleware
-// ============================================================================
-app.use(express.json());
+// Enable CORS — allow your frontend domain + localhost for testing
 app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
+    origin: [
+        'https://fantazma-network.onrender.com',
+        'https://fantazma-network.vercel.app',
+        'http://localhost:3000',
+        'http://localhost:5500',
+        'http://127.0.0.1:5500'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Static file serving with caching headers (Fix #8)
-app.use(express.static(path.join(__dirname, '.'), {
+// Parse JSON request bodies
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-  maxAge: '1d',
-  etag: true
-}));
+// ============================================
+// STATIC FILES — Serve your frontend HTML/CSS/JS
+// ============================================
 
-// ============================================================================
-// PERFORMANCE OPTIMIZATION: Input Validation Helper
-// ============================================================================
-function validateEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+// Try multiple possible paths for static files
+const possibleStaticPaths = [
+    path.join(__dirname, 'public'),      // public/ folder
+    path.join(__dirname, 'dist'),        // dist/ folder
+    path.join(__dirname, 'build'),       // build/ folder
+    path.join(__dirname),                // root (files in repo root)
+    path.join(__dirname, 'frontend'),    // frontend/ folder
+    path.join(__dirname, 'src')         // src/ folder
+];
+
+let staticPath = null;
+for (const p of possibleStaticPaths) {
+    if (fs.existsSync(p)) {
+        staticPath = p;
+        console.log(`[Static] Found static files at: ${p}`);
+        break;
+    }
 }
 
-function sanitizeString(str) {
-  return String(str).trim().substring(0, 500);
+if (staticPath) {
+    app.use(express.static(staticPath, {
+        maxAge: '1d',
+        etag: true,
+        lastModified: true
+    }));
+    console.log(`[Static] Serving files from: ${staticPath}`);
+} else {
+    console.log('[Static] WARNING: No static folder found. Creating fallback...');
 }
 
-// ============================================================================
-// PERFORMANCE OPTIMIZATION: JWT Authentication Middleware (Fix #7)
-// ============================================================================
-function authenticateToken(req, res, next) {
-  const token = req.headers['authorization']?.split(' ')[1];
-  if (!token) {
-    return res.status(401).json({ error: 'Access denied - no token provided' });
-  }
+// ============================================
+// JWT HELPERS (simple implementation)
+// ============================================
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) {
-      console.warn('Invalid token attempted:', err.message);
-      return res.status(403).json({ error: 'Invalid or expired token' });
-    }
-    req.user = user;
-    next();
-  });
+function generateToken(payload) {
+    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+    const now = Math.floor(Date.now() / 1000);
+    const body = Buffer.from(JSON.stringify({
+        ...payload,
+        iat: now,
+        exp: now + (30 * 24 * 60 * 60) // 30 days
+    })).toString('base64url');
+    const signature = require('crypto')
+        .createHmac('sha256', JWT_SECRET)
+        .update(`${header}.${body}`)
+        .digest('base64url');
+    return `${header}.${body}.${signature}`;
 }
 
-// ============================================================================
-// PERFORMANCE OPTIMIZATION: Error Handling for API Calls (Fix #5)
-// ============================================================================
-async function createCoinbaseCharge(chargeData) {
-  try {
-    const response = await fetch('https://api.commerce.coinbase.com/charges', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CC-Api-Key': COINBASE_API_KEY,
-        'X-CC-Version': '2018-03-22'
-      },
-      body: JSON.stringify(chargeData),
-      timeout: 10000 // 10 second timeout
-    });
-
-    // Validate response status
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Coinbase API error:', response.status, errorText);
-      return { error: `Payment API error: ${response.status}` };
-    }
-
-    const data = await response.json();
-
-    // Validate response structure
-    if (!data.data || !data.data.id || !data.data.hosted_url) {
-      console.error('Invalid Coinbase response structure:', data);
-      return { error: 'Invalid payment response from Coinbase' };
-    }
-
-    return data;
-  } catch (err) {
-    console.error('Coinbase API error:', err.message);
-    return { error: 'Payment service temporarily unavailable' };
-  }
-}
-
-// ============================================================================
-// Routes: Create Crypto Charge
-// ============================================================================
-app.post('/api/create-crypto-charge', createPaymentLimiter, async (req, res) => {
-  try {
-    const { email, tier } = req.body;
-
-    // Input validation
-    if (!email || !validateEmail(email)) {
-      return res.status(400).json({ error: 'Invalid email address' });
-    }
-
-    if (!tier || !['monthly', 'yearly', 'ppv'].includes(tier)) {
-      return res.status(400).json({ error: 'Invalid subscription tier' });
-    }
-
-    const pricing = {
-      monthly: { amount: '4.99', name: 'Fantazma Network Monthly' },
-      yearly: { amount: '49.99', name: 'Fantazma Network Annual' },
-      ppv: { amount: '9.99', name: 'Premium Premiere' }
-    };
-
-    const selected = pricing[tier];
-
-    const charge = {
-      name: 'Fantazma Network',
-      description: selected.name,
-      local_price: {
-        amount: selected.amount,
-        currency: 'USD'
-      },
-      pricing_type: 'fixed_price',
-      metadata: {
-        customer_email: email,
-        tier: tier
-      },
-      redirect_url: `${req.headers.origin}/success`,
-      cancel_url: `${req.headers.origin}/cancel`
-    };
-
-    const result = await createCoinbaseCharge(charge);
-
-    if (result.error) {
-      return res.status(502).json({ error: result.error });
-    }
-
-    // Store payment with TTL
-    payments.set(result.data.id, {
-      email,
-      tier,
-      status: 'pending',
-      createdAt: Date.now()
-    });
-
-    console.log(`💳 Payment initiated for ${email} - ${tier}`);
-
-    res.json({
-      url: result.data.hosted_url,
-      charge_id: result.data.id
-    });
-  } catch (err) {
-    console.error('Payment creation error:', err);
-    res.status(500).json({ error: 'Payment creation failed' });
-  }
-});
-
-// ============================================================================
-// Routes: Coinbase Webhook
-// ============================================================================
-app.post('/api/webhook-crypto', express.raw({ type: 'application/json' }), async (req, res) => {
-  try {
-    let event;
-    
-    if (Buffer.isBuffer(req.body)) {
-      event = JSON.parse(req.body.toString());
-    } else {
-      event = req.body;
-    }
-
-    if (event.event === 'charge:confirmed') {
-      const charge = event.data;
-      const { customer_email, tier } = charge.metadata || {};
-
-      if (!customer_email) {
-        console.warn('Webhook received without customer email');
-        return res.status(400).json({ error: 'Invalid webhook data' });
-      }
-
-      // Update user with TTL
-      const user = users.get(customer_email) || { email: customer_email };
-      user.isPaid = true;
-      user.tier = tier;
-      user.paidAt = Date.now();
-      users.set(customer_email, user);
-
-      console.log(`✅ Payment confirmed for: ${customer_email}`);
-    }
-
-    res.json({ received: true });
-  } catch (err) {
-    console.error('Webhook processing error:', err);
-    res.status(500).json({ error: 'Webhook processing failed' });
-  }
-});
-
-// ============================================================================
-// Routes: Authentication
-// ============================================================================
-// Routes: Authentication
-// ============================================================================
-
-app.post('/api/register', loginLimiter, async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !validateEmail(email)) {
-      return res.status(400).json({ error: 'Invalid email address' });
-    }
-
-    if (!password || password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
-    }
-
-    const existingUser = users.get(email);
-    if (existingUser && existingUser.password) {
-      return res.status(409).json({ error: 'User already exists' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = { 
-      email, 
-      password: hashedPassword,
-      isPaid: false 
-    };
-    users.set(email, user);
-
-    const token = jwt.sign(
-      { email, isPaid: false },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    console.log(`📝 New user registered: ${email}`);
-    res.json({ token, isPaid: false });
-  } catch (err) {
-    console.error('Registration error:', err);
-    res.status(500).json({ error: 'Registration failed' });
-  }
-});
-
-app.post('/api/login', loginLimiter, async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !validateEmail(email)) {
-      return res.status(400).json({ error: 'Invalid email address' });
-    }
-
-    const user = users.get(email);
-    
-    // If user doesn't exist, create basic account (for demo)
-    if (!user) {
-      const newUser = { email, isPaid: false };
-      users.set(email, newUser);
-      
-      const token = jwt.sign(
-        { email, isPaid: false },
-        process.env.JWT_SECRET,
-        { expiresIn: '24h' }
-      );
-      
-      console.log(`🔓 New user logged in (no password): ${email}`);
-      return res.json({ token, isPaid: false });
-    }
-
-    // If user has a password, verify it
-    if (user.password) {
-      if (!password) {
-        return res.status(400).json({ error: 'Password required' });
-      }
-      
-      const validPassword = await bcrypt.compare(password, user.password);
-      if (!validPassword) {
-        return res.status(401).json({ error: 'Invalid password' });
-      }
-    }
-
-    const token = jwt.sign(
-      { email, isPaid: user.isPaid || false },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    console.log(`🔓 User logged in: ${email}`);
-    res.json({ token, isPaid: user.isPaid || false });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Login failed' });
-  }
-});
-
-app.get('/api/verify', authenticateToken, (req, res) => {
-  res.json({ valid: true, user: req.user });
-});
-// ============================================================================
-// Routes: MetaMask Wallet Authentication
-// ============================================================================
-
-app.post('/api/auth/metamask', loginLimiter, async (req, res) => {
-  try {
-    const { address, signature, message } = req.body;
-
-    if (!address || !signature || !message) {
-      return res.status(400).json({ error: 'Missing wallet data' });
-    }
-
-    // Validate Ethereum address format
-    if (!ethers.isAddress(address)) {
-      return res.status(400).json({ error: 'Invalid Ethereum address' });
-    }
-
-    // Verify signature
-    const recoveredAddress = ethers.verifyMessage(message, signature);
-    
-    if (recoveredAddress.toLowerCase() !== address.toLowerCase()) {
-      return res.status(401).json({ error: 'Invalid signature' });
-    }
-
-    // Get or create user
-    const user = users.get(address) || { 
-      email: address, 
-      wallet: address,
-      isPaid: false 
-    };
-    users.set(address, user);
-
-    const token = jwt.sign(
-      { email: address, wallet: address, isPaid: user.isPaid },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    console.log(`🔐 MetaMask authenticated: ${address}`);
-    res.json({ token, isPaid: user.isPaid, address });
-  } catch (err) {
-    console.error('MetaMask auth error:', err);
-    res.status(500).json({ error: 'Wallet authentication failed' });
-  }
-});
-
-
-// ============================================================================
-// Socket.io Chat with Message History (Fix #4)
-// ============================================================================
-const MESSAGE_HISTORY_LIMIT = 50; // Cap messages per room
-
-io.on('connection', (socket) => {
-  console.log(`👤 User connected: ${socket.id}`);
-
-  socket.on('join-room', (roomId) => {
-    roomId = sanitizeString(roomId);
-    socket.join(roomId);
-
-    // Initialize message history for room if needed
-    if (!messageHistory.has(roomId)) {
-      messageHistory.set(roomId, []);
-    }
-
-    // Send existing message history to user
-    const history = messageHistory.get(roomId);
-    socket.emit('message-history', history);
-
-    socket.to(roomId).emit('user-joined', {
-      userId: socket.id,
-      timestamp: new Date().toISOString()
-    });
-
-    console.log(`📍 User ${socket.id} joined room: ${roomId}`);
-  });
-
-  socket.on('send-message', (data) => {
+function verifyToken(token) {
     try {
-      const { roomId, message, username } = data;
-
-      // Input validation and sanitization
-      if (!roomId || !message) {
-        return socket.emit('error', { message: 'Invalid message data' });
-      }
-
-      const sanitizedMessage = sanitizeString(message);
-      const sanitizedUsername = sanitizeString(username || 'Anonymous');
-
-      const messageData = {
-        username: sanitizedUsername,
-        message: sanitizedMessage,
-        timestamp: new Date().toISOString(),
-        userId: socket.id
-      };
-
-      // Store in message history with limit
-      const history = messageHistory.get(roomId) || [];
-      history.push(messageData);
-
-      // Keep only last N messages (Fix #4)
-      if (history.length > MESSAGE_HISTORY_LIMIT) {
-        history.shift();
-      }
-      messageHistory.set(roomId, history);
-
-      // Broadcast to room
-      io.to(roomId).emit('receive-message', messageData);
-    } catch (err) {
-      console.error('Message error:', err);
-      socket.emit('error', { message: 'Failed to send message' });
+        const [header, body, signature] = token.split('.');
+        const expectedSig = require('crypto')
+            .createHmac('sha256', JWT_SECRET)
+            .update(`${header}.${body}`)
+            .digest('base64url');
+        if (signature !== expectedSig) return null;
+        const payload = JSON.parse(Buffer.from(body, 'base64url').toString());
+        if (payload.exp < Math.floor(Date.now() / 1000)) return null;
+        return payload;
+    } catch (e) {
+        return null;
     }
-  });
+}
 
-  socket.on('disconnect', () => {
-    console.log(`👋 User disconnected: ${socket.id}`);
-  });
+// ============================================
+// IN-MEMORY USER STORE (replace with MongoDB in production)
+// ============================================
+
+const users = new Map();
+
+async function checkSubscription(address) {
+    // TODO: Query your database for subscription status
+    // For now, return false — user needs to subscribe
+    return false;
+}
+
+async function getOrCreateUser(address) {
+    const normalizedAddress = address.toLowerCase();
+    if (!users.has(normalizedAddress)) {
+        users.set(normalizedAddress, {
+            walletAddress: normalizedAddress,
+            createdAt: new Date(),
+            lastLogin: new Date(),
+            loginCount: 0,
+            subscription: {
+                isPaid: false,
+                type: null,
+                status: 'inactive',
+                expiresAt: null
+            }
+        });
+    }
+    const user = users.get(normalizedAddress);
+    user.lastLogin = new Date();
+    user.loginCount += 1;
+    user.subscription.isPaid = await checkSubscription(normalizedAddress);
+    if (user.subscription.isPaid) {
+        user.subscription.status = 'active';
+        user.subscription.type = 'monthly';
+        user.subscription.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    }
+    return user;
+}
+
+// ============================================
+// API ROUTES
+// ============================================
+
+// Health check
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        service: 'Fantazma Network API',
+        version: '1.0.0',
+        environment: NODE_ENV,
+        uptime: process.uptime()
+    });
 });
 
-// ============================================================================
-// Routes: Static Files
-// ============================================================================
+// MetaMask authentication
+app.post('/api/auth/metamask', async (req, res) => {
+    try {
+        const { address, signature, message } = req.body;
+
+        // Validate inputs
+        if (!address || !signature || !message) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields: address, signature, message'
+            });
+        }
+
+        // Validate Ethereum address format
+        const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+        if (!ethAddressRegex.test(address)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid Ethereum address format'
+            });
+        }
+
+        console.log('[MetaMask Auth] Verifying signature for:', address);
+
+        // Recover the signing address from the signature
+        let recoveredAddress;
+        try {
+            const { recoverPersonalSignature } = require('@metamask/eth-sig-util');
+            recoveredAddress = recoverPersonalSignature({
+                data: message,
+                signature: signature,
+            });
+        } catch (sigError) {
+            console.error('[MetaMask Auth] Signature recovery failed:', sigError.message);
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid signature format'
+            });
+        }
+
+        // Verify it matches the claimed address (case-insensitive)
+        if (recoveredAddress.toLowerCase() !== address.toLowerCase()) {
+            console.error('[MetaMask Auth] Address mismatch!');
+            return res.status(401).json({
+                success: false,
+                error: 'Signature verification failed — address mismatch'
+            });
+        }
+
+        console.log('[MetaMask Auth] Signature verified!');
+
+        // Get or create user
+        const user = await getOrCreateUser(address);
+
+        // Generate JWT token
+        const token = generateToken({
+            walletAddress: address.toLowerCase(),
+            type: 'metamask',
+            iat: Date.now()
+        });
+
+        res.json({
+            success: true,
+            message: 'MetaMask authentication successful',
+            address: address,
+            walletAddress: address,
+            token: token,
+            isPaid: user.subscription.isPaid,
+            subscription: {
+                type: user.subscription.type || 'none',
+                status: user.subscription.status,
+                expiresAt: user.subscription.expiresAt
+            },
+            user: {
+                walletAddress: address,
+                loginCount: user.loginCount,
+                createdAt: user.createdAt,
+                lastLogin: user.lastLogin
+            }
+        });
+
+    } catch (error) {
+        console.error('[MetaMask Auth] Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error during authentication',
+            details: NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
+
+// Verify JWT token
+app.get('/api/auth/verify', (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({
+                success: false,
+                error: 'No token provided'
+            });
+        }
+
+        const token = authHeader.substring(7);
+        const payload = verifyToken(token);
+
+        if (!payload) {
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid or expired token'
+            });
+        }
+
+        res.json({
+            success: true,
+            valid: true,
+            walletAddress: payload.walletAddress
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Token verification failed'
+        });
+    }
+});
+
+// Get current user info
+app.get('/api/auth/me', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({
+                success: false,
+                error: 'Authentication required'
+            });
+        }
+
+        const token = authHeader.substring(7);
+        const payload = verifyToken(token);
+
+        if (!payload) {
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid or expired token'
+            });
+        }
+
+        const user = users.get(payload.walletAddress);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            user: {
+                walletAddress: user.walletAddress,
+                subscription: user.subscription,
+                loginCount: user.loginCount,
+                createdAt: user.createdAt,
+                lastLogin: user.lastLogin
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Failed to get user info'
+        });
+    }
+});
+
+// Logout
+app.post('/api/auth/logout', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Logged out successfully'
+    });
+});
+
+// ============================================
+// FALLBACK: Serve index.html for SPA routes
+// ============================================
+
+// If no API route matched and no static file found, serve index.html
+// This enables client-side routing for SPAs
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '.', 'login.html'));
+    // Don't serve HTML for API routes that 404
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({
+            success: false,
+            error: 'API endpoint not found',
+            path: req.path
+        });
+    }
 
+    // Try to find and serve index.html or login.html
+    const indexPaths = [
+        path.join(__dirname, 'public', 'index.html'),
+        path.join(__dirname, 'public', 'login.html'),
+        path.join(__dirname, 'index.html'),
+        path.join(__dirname, 'login.html'),
+        path.join(__dirname, 'dist', 'index.html'),
+        path.join(__dirname, 'build', 'index.html')
+    ];
+
+    for (const indexPath of indexPaths) {
+        if (fs.existsSync(indexPath)) {
+            return res.sendFile(indexPath);
+        }
+    }
+
+    // If no index file found, return a simple message
+    res.status(404).send(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Fantazma Network</title></head>
+        <body style="background:#0a0a1a;color:#fff;font-family:sans-serif;text-align:center;padding-top:20vh;">
+            <h1>⚡ Fantazma Network API</h1>
+            <p>Server is running. Add your HTML files to serve the frontend.</p>
+            <p><a href="/api/health" style="color:#00f0ff;">Check API Health</a></p>
+        </body>
+        </html>
+    `);
 });
 
-// ============================================================================
-// PERFORMANCE OPTIMIZATION: Graceful Shutdown (Fix #10)
-// ============================================================================
-const gracefulShutdown = (signal) => {
-  console.log(`\n${signal} received. Starting graceful shutdown...`);
+// ============================================
+// ERROR HANDLING
+// ============================================
 
-  // Stop accepting new connections
-  server.close(() => {
-    console.log('✅ Server closed');
-    
-    // Cleanup caches
-    users.destroy();
-    payments.destroy();
-    messageHistory.clear();
-    
-    console.log('✅ Cache cleanup complete');
-    process.exit(0);
-  });
-
-  // Force shutdown after 10 seconds
-  setTimeout(() => {
-    console.error('❌ Forced shutdown - timeout exceeded');
-    process.exit(1);
-  }, 10000);
-};
-
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-// ============================================================================
-// Start Server
-// ============================================================================
-server.listen(PORT, () => {
-  console.log(`
-╔════════════════════════════════════════════════════════════╗
-║  🎬 Fantazma Network - Running                             ║
-╠════════════════════════════════════════════════════════════╣
-║  Port: ${PORT}                                                 ║
-║  Environment: ${NODE_ENV}                                       ║
-║  CORS Origins: ${allowedOrigins.length}                                         ║
-║  Memory Cache: Users + Payments + Message History           ║
-║  Auto-Cleanup: Enabled (hourly)                             ║
-║  Socket.io Security: Enabled (1MB buffer limit)             ║
-║  Rate Limiting: Enabled (payments + login)                  ║
-╚════════════════════════════════════════════════════════════╝
-  `);
+app.use((err, req, res, next) => {
+    console.error('[Server Error]', err);
+    res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+        details: NODE_ENV === 'development' ? err.message : undefined
+    });
 });
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.error('❌ Uncaught Exception:', err);
-  process.exit(1);
-});
+// ============================================
+// START SERVER
+// ============================================
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
+app.listen(PORT, () => {
+    console.log('');
+    console.log('╔══════════════════════════════════════════════════════╗');
+    console.log('║     ⚡ FANTAZMA NETWORK COMBINED SERVER ⚡           ║');
+    console.log('╠══════════════════════════════════════════════════════╣');
+    console.log(`║  Port:        ${PORT.toString().padEnd(41)} ║`);
+    console.log(`║  Environment: ${NODE_ENV.padEnd(41)} ║`);
+    console.log(`║  Static Path: ${(staticPath || 'NOT FOUND').padEnd(41)} ║`);
+    console.log('║  Status:      Running ✅                            ║');
+    console.log('╚══════════════════════════════════════════════════════╝');
+    console.log('');
+    console.log('API Endpoints:');
+    console.log('  GET  /api/health       → Health check');
+    console.log('  POST /api/auth/metamask → MetaMask login');
+    console.log('  GET  /api/auth/verify  → Verify JWT token');
+    console.log('  GET  /api/auth/me      → Get user info');
+    console.log('  POST /api/auth/logout  → Logout');
+    console.log('');
+    console.log('Static Files:');
+    console.log('  /login.html, /index.html, /dashboard.html, etc.');
+    console.log('');
 });

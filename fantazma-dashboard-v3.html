@@ -1155,6 +1155,12 @@
       if (video.paused) video.play();
       else video.pause();
     });
-  </script>
+      // ============================================
+    // CONFIG
+    // ============================================
+    const STREAM_HUB = 'https://stream-hub.davidjfantazma.repl.co';
+    const USER_ID = localStorage.getItem('fantazma_user_id') || 'user_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('fantazma_user_id', USER_ID);
+</script>
 </body>
 </html>

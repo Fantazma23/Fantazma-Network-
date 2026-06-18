@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fantazma Network — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-secondary: #111827;
+      --bg-card: #1a2234;
+      --bg-card-hover: #1e293b;
+      --border-color: #2d3748;
+      --accent-cyan: #00cfcf;
+      --accent-purple: #a855f7;
+      --accent-pink: #ec4899;
+      --accent-green: #10b981;
+      --accent-yellow: #f59e0b;
+      --accent-red: #ef4444;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
+
+    /* TICKER STYLES */
+    .ticker-wrap {
+      width: 100%;
+      overflow: hidden;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      height: 40px;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .ticker-label {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      z-index: 10;
+      text-transform: uppercase;
+    }
+
+    .ticker {
+      display: flex;
+      animation: ticker 60s linear infinite;
+      white-space: nowrap;
+      padding-left: 140px;
+    }
+
+    .ticker:hover { animation-play-state: paused; }
+
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 20px;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      border-right: 1px solid var(--border-color);
+    }
+
+    .ticker-crypto { color: var(--accent-cyan); }
+    .ticker-nft { color: var(--accent-purple); }
+    .ticker-stock { color: var(--accent-yellow); }
+
+    .ticker-up { color: var(--accent-green); }
+    .ticker-down { color: var(--accent-red); }
+
+    .ticker-icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+    }
+
+    /* SECONDARY TICKER (Bottom) */
+    .ticker-bottom {
+      border-top: 1px solid var(--border-color);
+      border-bottom: none;
+    }
+
+    .ticker-bottom .ticker-label {
+      background: linear-gradient(90deg, var(--accent-yellow), var(--accent-pink));
+    }
+
+    .ticker-bottom .ticker {
+      animation-duration: 80s;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo-section {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .logo-text { font-size: 14px; font-weight: 700; letter-spacing: 0.5px; }
+    .logo-sub { font-size: 10px; color: var(--text-muted); letter-spacing: 1px; }
+
+    .nav-menu { padding: 16px 12px; flex: 1; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 4px;
+    }
+
+    .nav-item:hover { background: var(--bg-card); color: var(--text-primary); }
+    .nav-item.active { background: var(--bg-card); color: var(--accent-cyan); border-left: 3px solid var(--accent-cyan); }
+    .nav-item i { width: 20px; text-align: center; font-size: 14px; }
+
+    /* MAIN CONTENT */
+    .main-content { margin-left: 240px; min-height: 100vh; display: flex; flex-direction: column; }
+
+    .header {
+      height: 60px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-title { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+
+    .header-actions { display: flex; align-items: center; gap: 16px; }
+
+    .header-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .header-icon:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .user-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+    }
+
+    /* DASHBOARD GRID */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr 320px;
+      gap: 16px;
+      padding: 16px;
+      flex: 1;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .card-menu { color: var(--text-muted); cursor: pointer; font-size: 12px; }
+
+    .card-body { padding: 16px; }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 12px;
+    }
+
+    .status-row:last-child { border-bottom: none; }
+
+    .status-label { color: var(--text-secondary); font-weight: 500; }
+    .status-value { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+    .status-connected { color: var(--accent-green); }
+
+    .status-bar {
+      width: 100%;
+      height: 4px;
+      background: var(--bg-primary);
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .status-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+    .fill-cyan { background: var(--accent-cyan); }
+    .fill-purple { background: var(--accent-purple); }
+    .fill-pink { background: var(--accent-pink); }
+
+    .data-grid {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    .data-grid span { display: inline-block; width: 20px; text-align: center; }
+    .data-highlight { color: var(--accent-cyan); }
+
+    /* BROADCAST PLAYER */
+    .broadcast-player {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .broadcast-player video { width: 100%; height: 100%; object-fit: cover; }
+
+    .broadcast-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.8));
+      pointer-events: none;
+    }
+
+    .broadcast-hud {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .hud-item {
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0,207,207,0.3);
+    }
+
+    .broadcast-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .control-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .control-btn:hover { background: var(--accent-cyan); color: var(--bg-primary); }
+
+    /* ANALYTICS LOG */
+    .analytics-log {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      line-height: 1.8;
+      color: var(--text-muted);
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .log-entry { padding: 2px 0; border-bottom: 1px solid rgba(45,55,72,0.5); }
+    .log-time { color: var(--accent-cyan); }
+    .log-ip { color: var(--accent-purple); }
+    .log-ua { color: var(--text-secondary); }
+    .log-loc { color: var(--accent-green); }
+
+    /* BOTTOM BAR */
+    .bottom-bar {
+      height: 48px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+    }
+
+    .bottom-stat { display: flex; align-items: center; gap: 8px; }
+    .bottom-stat-value { color: var(--accent-green); font-family: 'JetBrains Mono', monospace; }
+    .bottom-divider { color: var(--border-color); margin: 0 12px; }
+
+    /* CHARTS */
+    .chart-container { position: relative; height: 120px; }
+
+    /* CHANNEL GRID */
+    .channel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .channel-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .channel-item:hover { border-color: var(--accent-cyan); transform: translateY(-2px); }
+    .channel-item.active { border-color: var(--accent-green); box-shadow: 0 0 12px rgba(16,185,129,0.2); }
+
+    .channel-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    .channel-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .channel-meta { font-size: 9px; color: var(--text-muted); margin-top: 4px; }
+
+    .channel-live {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 6px;
+      height: 6px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* MAP */
+    .map-container {
+      height: 160px;
+      background: var(--bg-primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .map-dots { position: absolute; width: 100%; height: 100%; }
+    .map-dot {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      animation: blink 3s infinite;
+    }
+
+    @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+    /* CRYPTO PANEL */
+    .crypto-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .crypto-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 12px;
+    }
+
+    .crypto-item:last-child { border-bottom: none; }
+
+    .crypto-name { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+    .crypto-price { font-family: 'JetBrains Mono', monospace; color: var(--text-primary); }
+    .crypto-change { font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+    /* AOC BANNER */
+    .aoc-banner {
+      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(0,207,207,0.2));
+      border: 1px solid var(--accent-purple);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    .aoc-banner h4 { font-size: 12px; color: var(--accent-purple); margin-bottom: 4px; }
+    .aoc-banner p { font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+    @media (max-width: 1200px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .sidebar { transform: translateX(-100%); }
+      .main-content { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP CRYPTO TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker-label"><i class="fab fa-bitcoin" style="margin-right: 6px;"></i>Crypto 24h</div>
+    <div class="ticker" id="cryptoTicker">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo-section">
+      <div class="logo-icon"><i class="fas fa-shield-halved"></i></div>
+      <div>
+        <div class="logo-text">FANTAZMA</div>
+        <div class="logo-sub">NETWORK</div>
+      </div>
+    </div>
+    
+    <nav class="nav-menu">
+      <div class="nav-item active"><i class="fas fa-table-columns"></i><span>Dashboard</span></div>
+      <div class="nav-item"><i class="fas fa-tv"></i><span>Channels</span></div>
+      <div class="nav-item"><i class="fas fa-chart-line"></i><span>Analytics</span></div>
+      <div class="nav-item"><i class="fas fa-coins"></i><span>Crypto</span></div>
+      <div class="nav-item"><i class="fas fa-gear"></i><span>Settings</span></div>
+    </nav>
+
+    <!-- AOC Banner -->
+    <div style="padding: 0 16px 16px;">
+      <div class="aoc-banner">
+        <h4><i class="fas fa-crown" style="margin-right: 4px;"></i>ALPHA COIN OMEGA</h4>
+        <p>AOC: 0x4A66...1101</p>
+        <p style="margin-top: 4px; color: var(--accent-green);">+12.4% (24h)</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    
+    <!-- HEADER -->
+    <header class="header">
+      <h1 class="header-title">DASHBOARD</h1>
+      <div class="header-actions">
+        <div class="header-icon"><i class="fas fa-bell"></i></div>
+        <div class="user-pill">
+          <div class="user-avatar"></div>
+          <span>Johana Station</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- DASHBOARD GRID -->
+    <div class="dashboard-grid">
+      
+      <!-- LEFT COLUMN -->
+      <div class="left-column">
+        
+        <!-- Sync Bridge -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">Cross-Ecosystem Sync Bridge</span></div>
+          <div class="card-body">
+            <div class="status-row">
+              <span class="status-label">API STATUS</span>
+              <span class="status-value status-connected">CONNECTED</span>
+            </div>
+            <div class="status-bar"><div class="status-bar-fill fill-cyan" style="width: 100%"></div></div>
+            
+            <div class="status-row" style="margin-top: 12px;">
+              <span class="status-label">CATEGORIES</span>
+              <span class="status-value" id="categoryCount">58 (UPDATED)</span>
+            </div>
+            <div class="status-bar"><div class="status-bar-fill fill-purple" style="width: 75%"></div></div>
+            
+            <div class="status-row" style="margin-top: 12px;">
+              <span class="status-label">TOTAL ENDPOINTS</span>
+              <span class="status-value" id="endpointCount">1,450</span>
+            </div>
+            <div class="status-bar"><div class="status-bar-fill fill-pink" style="width: 60%"></div></div>
+          </div>
+        </div>
+
+        <!-- Data Grid -->
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-body"><div class="data-grid" id="dataGrid"></div></div>
+        </div>
+
+        <!-- Crypto Panel -->
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-header"><span class="card-title">Portfolio</span></div>
+          <div class="card-body" style="padding: 0 16px 16px;">
+            <div class="crypto-panel" id="cryptoPanel">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER COLUMN -->
+      <div class="center-column">
+        
+        <!-- Broadcast -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Broadcast</span>
+            <i class="fas fa-ellipsis card-menu"></i>
+          </div>
+          <div class="broadcast-player">
+            <video id="videoPlayer" poster="https://images.unsplash.com/photo-1593784991095-a205069470b6?w=1280&h=720&fit=crop">
+              <source src="" type="application/x-mpegURL">
+            </video>
+            <div class="broadcast-overlay"></div>
+            <div class="broadcast-hud">
+              <div class="hud-item">LIVE</div>
+              <div class="hud-item" id="resolutionHud">1080p</div>
+              <div class="hud-item" id="bitrateHud">5.2 Mbps</div>
+            </div>
+            <div class="broadcast-controls">
+              <div style="display: flex; gap: 8px;">
+                <div class="control-btn" id="playBtn"><i class="fas fa-play"></i></div>
+                <div class="control-btn"><i class="fas fa-volume-high"></i></div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <div class="control-btn"><i class="fas fa-expand"></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Persistent Viewing -->
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-header">
+            <span class="card-title">Persistent Viewing Architecture</span>
+            <i class="fas fa-ellipsis card-menu"></i>
+          </div>
+          <div class="card-body">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div>
+                <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Top Favorites</div>
+                <div class="chart-container"><canvas id="favoritesChart"></canvas></div>
+              </div>
+              <div>
+                <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Watch History (30 Days)</div>
+                <div class="chart-container"><canvas id="historyChart"></canvas></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Channels -->
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-header">
+            <span class="card-title">Channel Selection</span>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="channelSearch" placeholder="Search..." 
+                style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px 10px; font-size: 11px; color: var(--text-primary); width: 140px;">
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="channel-grid" id="channelGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-column">
+        
+        <!-- Global Caching -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">Global Caching Status</span></div>
+          <div class="card-body">
+            <div class="chart-container" style="height: 100px;"><canvas id="cachingChart"></canvas></div>
+            <div style="margin-top: 12px; text-align: center;">
+              <div style="font-size: 10px; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 1px;">Intel. Parsing: ACTIVE</div>
+              <div style="font-size: 18px; font-weight: 700; margin-top: 4px;" id="m3uCount">M3U Channels: 14,230</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics -->
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-header">
+            <span class="card-title">Real-Time Proxy Analytics</span>
+            <i class="fas fa-ellipsis card-menu"></i>
+          </div>
+          <div class="card-body">
+            <div class="analytics-log" id="analyticsLog"></div>
+          </div>
+        </div>
+
+        <!-- Traffic -->
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-header"><span class="card-title">Traffic</span></div>
+          <div class="card-body">
+            <div class="map-container">
+              <div class="map-dots" id="mapDots"></div>
+              <i class="fas fa-globe" style="font-size: 48px; color: var(--border-color); opacity: 0.3;"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- NFT Panel -->
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-header"><span class="card-title">NFT Floor Prices</span></div>
+          <div class="card-body" id="nftPanel">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM STOCK TICKER -->
+    <div class="ticker-wrap ticker-bottom">
+      <div class="ticker-label"><i class="fas fa-chart-bar" style="margin-right: 6px;"></i>Markets</div>
+      <div class="ticker" id="stockTicker">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="bottom-bar">
+      <div style="display: flex; align-items: center;">
+        <span class="bottom-stat"><i class="fas fa-signal" style="color: var(--accent-green);"></i>Stream Quality Monitoring</span>
+        <span class="bottom-divider">|</span>
+        <span class="bottom-stat">Deduplication: <span class="bottom-stat-value">OPTIMAL</span></span>
+        <span class="bottom-divider">|</span>
+        <span class="bottom-stat">Unique Feeds: <span class="bottom-stat-value" id="uniqueFeeds">8,120</span></span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <span style="color: var(--text-muted);"><i class="fas fa-server" style="margin-right: 6px;"></i>Stream Hub: <span style="color: var(--accent-green);">Online</span></span>
+        <span style="color: var(--text-muted);"><i class="fas fa-database" style="margin-right: 6px;"></i>PostgreSQL: <span style="color: var(--accent-green);">Connected</span></span>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ============================================
+    // CONFIG
+    // ============================================
+    const STREAM_HUB = 'https://stream-hub.davidjfantazma.repl.co';
+    const USER_ID = localStorage.getItem('fantazma_user_id') || 'user_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('fantazma_user_id', USER_ID);
+
+    // ============================================
+    // CRYPTO TICKER DATA
+    // ============================================
+    const cryptoData = [
+      { symbol: 'BTC', name: 'Bitcoin', price: 67432.50, change: 2.4, icon: 'fab fa-bitcoin' },
+      { symbol: 'ETH', name: 'Ethereum', price: 3521.80, change: -1.2, icon: 'fab fa-ethereum' },
+      { symbol: 'AOC', name: 'Alpha Coin', price: 0.0452, change: 12.4, icon: 'fas fa-crown' },
+      { symbol: 'SOL', name: 'Solana', price: 142.30, change: 5.7, icon: 'fas fa-sun' },
+      { symbol: 'ADA', name: 'Cardano', price: 0.4821, change: -0.8, icon: 'fas fa-circle' },
+      { symbol: 'DOT', name: 'Polkadot', price: 7.85, change: 3.2, icon: 'fas fa-dot-circle' },
+      { symbol: 'AVAX', name: 'Avalanche', price: 38.42, change: -2.1, icon: 'fas fa-mountain' },
+      { symbol: 'MATIC', name: 'Polygon', price: 0.72, change: 1.5, icon: 'fas fa-draw-polygon' },
+      { symbol: 'LINK', name: 'Chainlink', price: 18.95, change: 4.3, icon: 'fas fa-link' },
+      { symbol: 'UNI', name: 'Uniswap', price: 9.82, change: -0.5, icon: 'fas fa-uniswap' },
+      { symbol: 'DOGE', name: 'Dogecoin', price: 0.1623, change: 8.9, icon: 'fas fa-dog' },
+      { symbol: 'SHIB', name: 'Shiba Inu', price: 0.000028, change: -5.2, icon: 'fas fa-paw' }
+    ];
+
+    // ============================================
+    // STOCK TICKER DATA
+    // ============================================
+    const stockData = [
+      { symbol: 'SPY', name: 'S&P 500', price: 445.32, change: 0.8 },
+      { symbol: 'QQQ', name: 'Nasdaq 100', price: 378.45, change: 1.2 },
+      { symbol: 'DIA', name: 'Dow Jones', price: 356.78, change: -0.3 },
+      { symbol: 'IWM', name: 'Russell 2000', price: 198.42, change: 0.5 },
+      { symbol: 'AAPL', name: 'Apple', price: 178.35, change: 1.5 },
+      { symbol: 'MSFT', name: 'Microsoft', price: 332.18, change: 0.9 },
+      { symbol: 'GOOGL', name: 'Alphabet', price: 142.65, change: -0.7 },
+      { symbol: 'AMZN', name: 'Amazon', price: 155.89, change: 2.1 },
+      { symbol: 'TSLA', name: 'Tesla', price: 248.42, change: -1.8 },
+      { symbol: 'META', name: 'Meta', price: 312.75, change: 3.2 },
+      { symbol: 'NVDA', name: 'NVIDIA', price: 485.09, change: 4.5 },
+      { symbol: 'NFLX', name: 'Netflix', price: 445.12, change: -0.4 }
+    ];
+
+    // ============================================
+    // NFT DATA
+    // ============================================
+    const nftData = [
+      { name: 'Bored Ape', floor: 45.2, change: -2.1, currency: 'ETH' },
+      { name: 'CryptoPunks', floor: 52.8, change: 1.5, currency: 'ETH' },
+      { name: 'Azuki', floor: 12.4, change: 5.3, currency: 'ETH' },
+      { name: 'Doodles', floor: 8.9, change: -0.8, currency: 'ETH' },
+      { name: 'Moonbirds', floor: 6.2, change: 3.7, currency: 'ETH' }
+    ];
+
+    // ============================================
+    // INIT
+    // ============================================
+    document.addEventListener('DOMContentLoaded', () => {
+      initCryptoTicker();
+      initStockTicker();
+      initCryptoPanel();
+      initNFTPanel();
+      initDataGrid();
+      initAnalyticsLog();
+      initMapDots();
+      loadChannels();
+      initCharts();
+      startRealtimeUpdates();
+    });
+
+    // ============================================
+    // CRYPTO TICKER
+    // ============================================
+    function initCryptoTicker() {
+      const ticker = document.getElementById('cryptoTicker');
+      let html = '';
+      
+      // Double the items for seamless loop
+      [...cryptoData, ...cryptoData].forEach(crypto => {
+        const changeClass = crypto.change >= 0 ? 'ticker-up' : 'ticker-down';
+        const changeIcon = crypto.change >= 0 ? '▲' : '▼';
+        html += `
+          <div class="ticker-item ticker-crypto">
+            <span class="ticker-icon" style="background: ${crypto.change >= 0 ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}; color: ${crypto.change >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'};">
+              <i class="${crypto.icon}"></i>
+            </span>
+            <span style="font-weight: 600;">${crypto.symbol}</span>
+            <span>$${crypto.price.toLocaleString()}</span>
+            <span class="${changeClass}">${changeIcon} ${Math.abs(crypto.change)}%</span>
+          </div>
+        `;
+      });
+      
+      ticker.innerHTML = html;
+    }
+
+    // ============================================
+    // STOCK TICKER
+    // ============================================
+    function initStockTicker() {
+      const ticker = document.getElementById('stockTicker');
+      let html = '';
+      
+      [...stockData, ...stockData].forEach(stock => {
+        const changeClass = stock.change >= 0 ? 'ticker-up' : 'ticker-down';
+        const changeIcon = stock.change >= 0 ? '▲' : '▼';
+        html += `
+          <div class="ticker-item ticker-stock">
+            <span style="font-weight: 600;">${stock.symbol}</span>
+            <span>$${stock.price.toFixed(2)}</span>
+            <span class="${changeClass}">${changeIcon} ${Math.abs(stock.change)}%</span>
+          </div>
+        `;
+      });
+      
+      ticker.innerHTML = html;
+    }
+
+    // ============================================
+    // CRYPTO PANEL (Left Sidebar)
+    // ============================================
+    function initCryptoPanel() {
+      const panel = document.getElementById('cryptoPanel');
+      const topCryptos = cryptoData.slice(0, 5);
+      
+      panel.innerHTML = topCryptos.map(crypto => {
+        const changeClass = crypto.change >= 0 ? 'ticker-up' : 'ticker-down';
+        return `
+          <div class="crypto-item">
+            <div class="crypto-name">
+              <i class="${crypto.icon}" style="color: var(--accent-cyan);"></i>
+              ${crypto.symbol}
+            </div>
+            <div style="text-align: right;">
+              <div class="crypto-price">$${crypto.price.toLocaleString()}</div>
+              <div class="crypto-change ${changeClass}">${crypto.change > 0 ? '+' : ''}${crypto.change}%</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ============================================
+    // NFT PANEL (Right Sidebar)
+    // ============================================
+    function initNFTPanel() {
+      const panel = document.getElementById('nftPanel');
+      
+      panel.innerHTML = nftData.map(nft => {
+        const changeClass = nft.change >= 0 ? 'ticker-up' : 'ticker-down';
+        return `
+          <div class="crypto-item">
+            <div class="crypto-name">
+              <i class="fas fa-image" style="color: var(--accent-purple);"></i>
+              ${nft.name}
+            </div>
+            <div style="text-align: right;">
+              <div class="crypto-price">${nft.floor} ${nft.currency}</div>
+              <div class="crypto-change ${changeClass}">${nft.change > 0 ? '+' : ''}${nft.change}%</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ============================================
+    // DATA GRID
+    // ============================================
+    function initDataGrid() {
+      const grid = document.getElementById('dataGrid');
+      let html = '';
+      for (let i = 0; i < 16; i++) {
+        html += '<div>';
+        for (let j = 0; j < 12; j++) {
+          const val = Math.random() > 0.7 ? Math.floor(Math.random() * 10) : Math.floor(Math.random() * 2);
+          const highlight = Math.random() > 0.9 ? 'data-highlight' : '';
+          html += `<span class="${highlight}">${val}</span>`;
+        }
+        html += '</div>';
+      }
+      grid.innerHTML = html;
+      
+      setInterval(() => {
+        const spans = grid.querySelectorAll('span');
+        const randomSpan = spans[Math.floor(Math.random() * spans.length)];
+        randomSpan.textContent = Math.floor(Math.random() * 10);
+        randomSpan.classList.toggle('data-highlight');
+      }, 200);
+    }
+
+    // ============================================
+    // ANALYTICS LOG
+    // ============================================
+    function initAnalyticsLog() {
+      const log = document.getElementById('analyticsLog');
+      const locations = ['New York, USA', 'London, UK', 'Tokyo, JP', 'Berlin, DE', 'Paris, FR', 'Sydney, AU', 'Toronto, CA'];
+      const uas = ['Mozilla/5.0', 'Chrome/120.0', 'Safari/605.1', 'Firefox/121.0'];
+      
+      function addLogEntry() {
+        const ip = `192.168.1.${Math.floor(Math.random() * 255)}`;
+        const loc = locations[Math.floor(Math.random() * locations.length)];
+        const ua = uas[Math.floor(Math.random() * uas.length)];
+        const duration = `0${Math.floor(Math.random() * 2)}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`;
+        
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `[<<span class="log-time">LOG</span>] IP: <span class="log-ip">${ip}</span> | UA: <span class="log-ua">${ua}</span> | DURATION: ${duration} | LOC: <span class="log-loc">${loc}</span>`;
+        
+        log.insertBefore(entry, log.firstChild);
+        if (log.children.length > 20) log.removeChild(log.lastChild);
+      }
+      
+      for (let i = 0; i < 8; i++) addLogEntry();
+      setInterval(addLogEntry, 3000);
+    }
+
+    // ============================================
+    // MAP DOTS
+    // ============================================
+    function initMapDots() {
+      const container = document.getElementById('mapDots');
+      for (let i = 0; i < 15; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'map-dot';
+        dot.style.left = `${10 + Math.random() * 80}%`;
+        dot.style.top = `${10 + Math.random() * 80}%`;
+        dot.style.animationDelay = `${Math.random() * 3}s`;
+        container.appendChild(dot);
+      }
+    }
+
+    // ============================================
+    // CHANNELS
+    // ============================================
+    async function loadChannels() {
+      try {
+        const res = await fetch(`${STREAM_HUB}/api/iptv/channels?limit=24`);
+        const data = await res.json();
+        
+        if (!data.success) throw new Error(data.error);
+        
+        const grid = document.getElementById('channelGrid');
+        grid.innerHTML = data.channels.map((ch, i) => `
+          <div class="channel-item ${i === 0 ? 'active' : ''}" data-url="${ch.url}" data-name="${ch.name}">
+            <div class="channel-live"></div>
+            <div class="channel-logo"><i class="fas fa-tv" style="color: var(--accent-cyan);"></i></div>
+            <div class="channel-name">${ch.name}</div>
+            <div class="channel-meta">${ch.group} • ${ch.country || '?'}</div>
+          </div>
+        `).join('');
+        
+        document.getElementById('m3uCount').textContent = `M3U Channels: ${data.total.toLocaleString()}`;
+        document.getElementById('uniqueFeeds').textContent = data.total.toLocaleString();
+        
+        grid.querySelectorAll('.channel-item').forEach(item => {
+          item.addEventListener('click', () => {
+            grid.querySelectorAll('.channel-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            playChannel(item.dataset.url, item.dataset.name);
+          });
+        });
+        
+      } catch (err) {
+        console.error('Channels load failed:', err);
+      }
+    }
+
+    function playChannel(url, name) {
+      const video = document.getElementById('videoPlayer');
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(`${STREAM_HUB}/api/iptv/proxy?url=${encodeURIComponent(url)}`);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+      } else if (video.canPlayType('application/vnd.apple.mpegURL')) {
+        video.src = `${STREAM_HUB}/api/iptv/proxy?url=${encodeURIComponent(url)}`;
+        video.play();
+      }
+    }
+
+    // ============================================
+    // CHARTS
+    // ============================================
+    function initCharts() {
+      // Caching Chart
+      new Chart(document.getElementById('cachingChart'), {
+        type: 'line',
+        data: {
+          labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+          datasets: [{
+            data: [85, 78, 92, 88, 95, 82, 90],
+            borderColor: '#00cfcf',
+            backgroundColor: 'rgba(0, 207, 207, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            borderWidth: 2
+          }, {
+            data: [45, 52, 38, 65, 48, 55, 42],
+            borderColor: '#ec4899',
+            backgroundColor: 'rgba(236, 72, 153, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { display: false }, y: { display: false } }
+        }
+      });
+
+      // Favorites Chart
+      new Chart(document.getElementById('favoritesChart'), {
+        type: 'bar',
+        data: {
+          labels: ['News', 'Sports', 'Movies', 'Music', 'Docs'],
+          datasets: [{
+            data: [45, 32, 28, 24, 18],
+            backgroundColor: '#a855f7',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#64748b', font: { size: 9 } }, grid: { display: false } },
+            y: { display: false }
+          }
+        }
+      });
+
+      // History Chart
+      new Chart(document.getElementById('historyChart'), {
+        type: 'line',
+        data: {
+          labels: Array.from({length: 30}, (_, i) => i + 1),
+          datasets: [{
+            data: Array.from({length: 30}, () => Math.floor(Math.random() * 20) + 10),
+            borderColor: '#00cfcf',
+            backgroundColor: 'rgba(0, 207, 207, 0.15)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { x: { display: false }, y: { display: false } }
+        }
+      });
+    }
+
+    // ============================================
+    // REALTIME UPDATES
+    // ============================================
+    function startRealtimeUpdates() {
+      setInterval(() => {
+        const base = 8120;
+        const variance = Math.floor(Math.random() * 200) - 100;
+        document.getElementById('uniqueFeeds').textContent = (base + variance).toLocaleString();
+      }, 5000);
+    }
+
+    // Play button
+    document.getElementById('playBtn').addEventListener('click', () => {
+      const video = document.getElementById('videoPlayer');
+      if (video.paused) video.play();
+      else video.pause();
+    });
+  </script>
+</body>
+</html>

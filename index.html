@@ -376,10 +376,26 @@
     <script>
         // Login handler
         function handleLogin(e) {
-            e.preventDefault();
-            const user = document.getElementById('username').value;
-            alert('Welcome to the Nexus, ' + user + '! 🙏🔐🦊');
-        }
+    e.preventDefault();
+    const user = document.getElementById('username').value;
+    
+    // Create session in localStorage
+    var session = {
+        user: { type: 'email', name: user, email: user },
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 86400000
+    };
+    localStorage.setItem('fantazma_session', JSON.stringify(session));
+    
+    // Show welcome
+    alert('Welcome to the Nexus, ' + user + '! 🙏🔐🦊');
+    
+    // Redirect to dashboard after alert
+    setTimeout(function() {
+        window.location.href = '/fantazma-dashboard-v3.html';
+    }, 500);
+}
+
 
         // MetaMask connect
         async function connectMetaMask() {

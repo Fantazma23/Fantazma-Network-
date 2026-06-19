@@ -10,7 +10,8 @@
         sessionKey: 'fantazma_session',
         authKey: 'fantazma_auth',
         sessionDuration: 86400000, // 24 hours
-        redirectUrl: '/dashboard.html',
+        redirectUrl: '/fantazma-dashboard-v3.html',
+
         loginUrl: '/login.html'
     };
 

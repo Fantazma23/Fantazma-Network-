@@ -1,0 +1,473 @@
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FILE 8: config/mongodb-donations.js (Campaign Finance)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+donations_js = '''// ═══════════════════════════════════════════════════════════════════════════════
+// FANTAZMA NETWORK — DONATIONS COLLECTION (Campaign Finance)
+// FEC-compliant donation tracking with AOC crypto integration
+// Run: node config/mongodb-donations.js
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const { MongoClient } = require('mongodb');
+require('dotenv').config();
+
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+    console.error('❌ MONGODB_URI not found in .env');
+    process.exit(1);
+}
+
+const dbName = 'fantazma_network';
+
+const sampleDonations = [
+    {
+        donationId: "DON-001",
+        userId: "USR-001",
+        userEmail: "fantazma@example.com",
+        campaign: "Foster2028",
+        campaignId: "CAMP-2028-001",
+        
+        amount: {
+            aoc: 1000,
+            usd: 4.50,
+            usdAtTime: 0.0045
+        },
+        
+        payment: {
+            method: "aoc", // aoc, crypto, card, bank, cash
+            txHash: "0xabc123def456789012345678901234567890abcd",
+            blockNumber: 18923456,
+            network: "ethereum",
+            contractAddress: "0x4A662A2f4614BE5d9eB82592207be12F159b1101",
+            fromAddress: "0x4A662A2f4614BE5d9eB82592207be12F159b1101",
+            toAddress: "0xCampaignTreasury1234567890123456789012345",
+            confirmations: 12,
+            gasUsed: 65000,
+            gasPrice: "25000000000",
+            feeUSD: 1.62
+        },
+        
+        donor: {
+            firstName: "David",
+            lastName: "Fantazma",
+            displayName: "David J. Fantazma",
+            email: "fantazma@example.com",
+            phone: "+1-207-555-0100",
+            address: {
+                street: "263 Main St",
+                city: "Bangor",
+                state: "ME",
+                zip: "04401",
+                country: "US"
+            },
+            occupation: "Founder / Developer",
+            employer: "Fantazma Network",
+            isRetired: false,
+            isStudent: false,
+            ageVerified: true, // 18+
+            isUSCitizen: true,
+            previousDonations: 3
+        },
+        
+        compliance: {
+            fecReported: true,
+            fecReportId: "FEC-2026-Q2-001",
+            fecLineItem: 42,
+            amountLimitCheck: true, // Under $3,300 per election limit
+            aggregateAmount: 4500, // Total from this donor
+            isCorporate: false,
+            isForeign: false,
+            isAnonymous: false,
+            refundEligible: false,
+            refundReason: null,
+            refundTxHash: null,
+            audited: false,
+            auditNotes: "",
+            legalReviewed: true,
+            legalReviewer: "Compliance Officer",
+            legalReviewedAt: new Date("2026-03-02")
+        },
+        
+        metadata: {
+            source: "dashboard",
+            referrer: "https://fantazma-network.onrender.com/donate",
+            userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)",
+            ipAddress: "192.168.1.1",
+            geo: { country: "US", region: "Maine", city: "Bangor" },
+            utmSource: "email",
+            utmMedium: "newsletter",
+            utmCampaign: "june_fundraiser",
+            notes: "Monthly recurring donor — upgraded from $500"
+        },
+        
+        receipt: {
+            sent: true,
+            sentAt: new Date("2026-03-01T12:00:00Z"),
+            receiptNumber: "RCP-2026-001042",
+            emailDelivered: true,
+            emailOpened: true
+        },
+        
+        status: "confirmed",
+        createdAt: new Date("2026-03-01T10:30:00Z"),
+        updatedAt: new Date("2026-03-02T08:00:00Z")
+    },
+    {
+        donationId: "DON-002",
+        userId: "USR-002",
+        userEmail: "sacred@example.com",
+        campaign: "Foster2028",
+        campaignId: "CAMP-2028-001",
+        
+        amount: {
+            aoc: 2500,
+            usd: 11.25,
+            usdAtTime: 0.0045
+        },
+        
+        payment: {
+            method: "aoc",
+            txHash: "0xbbb111ccc222ddd333eee444fff555666777888999",
+            blockNumber: 18924567,
+            network: "ethereum",
+            contractAddress: "0x4A662A2f4614BE5d9eB82592207be12F159b1101",
+            fromAddress: "0x1234567890abcdef1234567890abcdef12345678",
+            toAddress: "0xCampaignTreasury1234567890123456789012345",
+            confirmations: 12,
+            gasUsed: 68000,
+            gasPrice: "24000000000",
+            feeUSD: 1.63
+        },
+        
+        donor: {
+            firstName: "Sacred",
+            lastName: "Seeker",
+            displayName: "Sacred Seeker",
+            email: "sacred@example.com",
+            phone: "+1-310-555-0200",
+            address: {
+                street: "1234 Sunset Blvd",
+                city: "Los Angeles",
+                state: "CA",
+                zip: "90028",
+                country: "US"
+            },
+            occupation: "Energy Healer",
+            employer: "Self-Employed",
+            isRetired: false,
+            isStudent: false,
+            ageVerified: true,
+            isUSCitizen: true,
+            previousDonations: 1
+        },
+        
+        compliance: {
+            fecReported: true,
+            fecReportId: "FEC-2026-Q2-001",
+            fecLineItem: 43,
+            amountLimitCheck: true,
+            aggregateAmount: 2500,
+            isCorporate: false,
+            isForeign: false,
+            isAnonymous: false,
+            refundEligible: false,
+            refundReason: null,
+            refundTxHash: null,
+            audited: false,
+            auditNotes: "",
+            legalReviewed: true,
+            legalReviewer: "Compliance Officer",
+            legalReviewedAt: new Date("2026-03-16")
+        },
+        
+        metadata: {
+            source: "dashboard",
+            referrer: "https://fantazma-network.onrender.com/donate",
+            userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            ipAddress: "10.0.0.1",
+            geo: { country: "US", region: "California", city: "Los Angeles" },
+            utmSource: "twitter",
+            utmMedium: "social",
+            utmCampaign: "sacred_defi_launch",
+            notes: "First-time donor from SacredDeFi community"
+        },
+        
+        receipt: {
+            sent: true,
+            sentAt: new Date("2026-03-15T14:00:00Z"),
+            receiptNumber: "RCP-2026-001043",
+            emailDelivered: true,
+            emailOpened: true
+        },
+        
+        status: "confirmed",
+        createdAt: new Date("2026-03-15T13:00:00Z"),
+        updatedAt: new Date("2026-03-16T09:00:00Z")
+    },
+    {
+        donationId: "DON-003",
+        userId: null, // Anonymous guest donation
+        userEmail: "anonymous@protonmail.com",
+        campaign: "Foster2028",
+        campaignId: "CAMP-2028-001",
+        
+        amount: {
+            aoc: 100,
+            usd: 0.45,
+            usdAtTime: 0.0045
+        },
+        
+        payment: {
+            method: "aoc",
+            txHash: "0xccc333ddd444eee555fff666ggg777hhh888iii",
+            blockNumber: 18925678,
+            network: "ethereum",
+            contractAddress: "0x4A662A2f4614BE5d9eB82592207be12F159b1101",
+            fromAddress: "0xAnonymousWallet98765432109876543210987654",
+            toAddress: "0xCampaignTreasury1234567890123456789012345",
+            confirmations: 12,
+            gasUsed: 62000,
+            gasPrice: "26000000000",
+            feeUSD: 1.61
+        },
+        
+        donor: {
+            firstName: "Anonymous",
+            lastName: "Donor",
+            displayName: "Anonymous Supporter",
+            email: "anonymous@protonmail.com",
+            phone: null,
+            address: {
+                street: null,
+                city: null,
+                state: null,
+                zip: null,
+                country: "US"
+            },
+            occupation: null,
+            employer: null,
+            isRetired: false,
+            isStudent: false,
+            ageVerified: false, // Cannot verify
+            isUSCitizen: null, // Unknown
+            previousDonations: 0
+        },
+        
+        compliance: {
+            fecReported: false, // Cannot report without verification
+            fecReportId: null,
+            fecLineItem: null,
+            amountLimitCheck: true, // Under limit
+            aggregateAmount: 100,
+            isCorporate: false,
+            isForeign: null, // Unknown
+            isAnonymous: true,
+            refundEligible: true,
+            refundReason: "Unable to verify donor identity for FEC compliance",
+            refundTxHash: null,
+            audited: true,
+            auditNotes: "Flagged for identity verification. Under $200 threshold for itemization.",
+            legalReviewed: true,
+            legalReviewer: "Compliance Officer",
+            legalReviewedAt: new Date("2026-04-11")
+        },
+        
+        metadata: {
+            source: "widget",
+            referrer: "https://foster2028.com/donate",
+            userAgent: "Mozilla/5.0 (Linux; Android 14)",
+            ipAddress: "172.16.0.1",
+            geo: { country: "US", region: null, city: null },
+            utmSource: null,
+            utmMedium: null,
+            utmCampaign: null,
+            notes: "Anonymous donation via MetaMask — flagged for compliance review"
+        },
+        
+        receipt: {
+            sent: true,
+            sentAt: new Date("2026-04-10T16:00:00Z"),
+            receiptNumber: "RCP-2026-001044",
+            emailDelivered: true,
+            emailOpened: false
+        },
+        
+        status: "pending_review",
+        createdAt: new Date("2026-04-10T15:00:00Z"),
+        updatedAt: new Date("2026-04-11T10:00:00Z")
+    },
+    {
+        donationId: "DON-004",
+        userId: "USR-001",
+        userEmail: "fantazma@example.com",
+        campaign: "Foster2028",
+        campaignId: "CAMP-2028-001",
+        
+        amount: {
+            aoc: 500,
+            usd: 2.25,
+            usdAtTime: 0.0045
+        },
+        
+        payment: {
+            method: "aoc",
+            txHash: "0xddd444eee555fff666ggg777hhh888iii999jjj",
+            blockNumber: 18926789,
+            network: "ethereum",
+            contractAddress: "0x4A662A2f4614BE5d9eB82592207be12F159b1101",
+            fromAddress: "0x4A662A2f4614BE5d9eB82592207be12F159b1101",
+            toAddress: "0xCampaignTreasury1234567890123456789012345",
+            confirmations: 12,
+            gasUsed: 64000,
+            gasPrice: "25500000000",
+            feeUSD: 1.63
+        },
+        
+        donor: {
+            firstName: "David",
+            lastName: "Fantazma",
+            displayName: "David J. Fantazma",
+            email: "fantazma@example.com",
+            phone: "+1-207-555-0100",
+            address: {
+                street: "263 Main St",
+                city: "Bangor",
+                state: "ME",
+                zip: "04401",
+                country: "US"
+            },
+            occupation: "Founder / Developer",
+            employer: "Fantazma Network",
+            isRetired: false,
+            isStudent: false,
+            ageVerified: true,
+            isUSCitizen: true,
+            previousDonations: 4
+        },
+        
+        compliance: {
+            fecReported: true,
+            fecReportId: "FEC-2026-Q2-001",
+            fecLineItem: 45,
+            amountLimitCheck: true,
+            aggregateAmount: 5000, // Now at $5,000 total
+            isCorporate: false,
+            isForeign: false,
+            isAnonymous: false,
+            refundEligible: false,
+            refundReason: null,
+            refundTxHash: null,
+            audited: false,
+            auditNotes: "",
+            legalReviewed: true,
+            legalReviewer: "Compliance Officer",
+            legalReviewedAt: new Date("2026-04-11")
+        },
+        
+        metadata: {
+            source: "dashboard",
+            referrer: "https://fantazma-network.onrender.com/donate",
+            userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)",
+            ipAddress: "192.168.1.1",
+            geo: { country: "US", region: "Maine", city: "Bangor" },
+            utmSource: "push_notification",
+            utmMedium: "app",
+            utmCampaign: "april_push",
+            notes: "Recurring monthly donation"
+        },
+        
+        receipt: {
+            sent: true,
+            sentAt: new Date("2026-04-10T12:00:00Z"),
+            receiptNumber: "RCP-2026-001045",
+            emailDelivered: true,
+            emailOpened: true
+        },
+        
+        status: "confirmed",
+        createdAt: new Date("2026-04-10T11:00:00Z"),
+        updatedAt: new Date("2026-04-11T08:00:00Z")
+    }
+];
+
+async function seedDonations() {
+    const client = new MongoClient(uri);
+    
+    try {
+        await client.connect();
+        console.log('✅ Connected to MongoDB');
+        
+        const db = client.db(dbName);
+        const collection = db.collection('donations');
+        
+        // Create indexes
+        console.log('📇 Creating indexes...');
+        await collection.createIndex({ 'userId': 1, 'createdAt': -1 });
+        await collection.createIndex({ 'payment.txHash': 1 }, { sparse: true });
+        await collection.createIndex({ 'compliance.fecReported': 1 });
+        await collection.createIndex({ 'campaign': 1, 'status': 1 });
+        await collection.createIndex({ 'donor.email': 1 });
+        await collection.createIndex({ 'amount.aoc': 1 });
+        console.log('   ✅ Donations indexes created');
+        
+        await collection.deleteMany({});
+        console.log('🗑️  Cleared existing donations');
+        
+        const result = await collection.insertMany(sampleDonations);
+        console.log(`✅ Inserted ${result.insertedCount} sample donations`);
+        
+        // Show summary
+        const statusSummary = await collection.aggregate([
+            { $group: { _id: '$status', count: { $sum: 1 }, totalAOC: { $sum: '$amount.aoc' }, totalUSD: { $sum: '$amount.usd' } } }
+        ]).toArray();
+        
+        console.log('');
+        console.log('📊 DONATIONS BY STATUS:');
+        for (const s of statusSummary) {
+            console.log(`   ${s._id}: ${s.count} donations | ${s.totalAOC.toLocaleString()} AOC ($${s.totalUSD.toFixed(2)})`);
+        }
+        
+        const methodSummary = await collection.aggregate([
+            { $group: { _id: '$payment.method', count: { $sum: 1 }, totalAOC: { $sum: '$amount.aoc' } } }
+        ]).toArray();
+        
+        console.log('');
+        console.log('📊 DONATIONS BY PAYMENT METHOD:');
+        for (const m of methodSummary) {
+            console.log(`   ${m._id}: ${m.count} donations | ${m.totalAOC.toLocaleString()} AOC`);
+        }
+        
+        const donorSummary = await collection.aggregate([
+            { $match: { 'compliance.fecReported': true } },
+            { $group: { _id: null, totalDonors: { $sum: 1 }, totalAOC: { $sum: '$amount.aoc' }, totalUSD: { $sum: '$amount.usd' } } }
+        ]).toArray();
+        
+        if (donorSummary.length > 0) {
+            console.log('');
+            console.log('📊 FEC-REPORTED DONATIONS:');
+            console.log(`   Total donors: ${donorSummary[0].totalDonors}`);
+            console.log(`   Total AOC: ${donorSummary[0].totalAOC.toLocaleString()}`);
+            console.log(`   Total USD: $${donorSummary[0].totalUSD.toFixed(2)}`);
+        }
+        
+        console.log('');
+        console.log('🙏 God bless Fantazma Network!');
+        
+    } catch (err) {
+        console.error('❌ ERROR:', err.message);
+    } finally {
+        await client.close();
+        console.log('🔌 Connection closed');
+    }
+}
+
+seedDonations();
+'''
+
+with open('/mnt/agents/output/config/mongodb-donations.js', 'w') as f:
+    f.write(donations_js)
+
+print("✅ FILE 8/8: config/mongodb-donations.js (Campaign Finance)")
+print(f"📁 Saved to: /mnt/agents/output/config/mongodb-donations.js")
+print(f"📊 Size: {len(donations_js)} characters")

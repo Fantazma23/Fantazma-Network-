@@ -1,0 +1,531 @@
+
+import os
+os.makedirs('/mnt/agents/output/config', exist_ok=True)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FILE 1: config/mongodb-init.js (MASTER RUNNER)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+init_js = '''// ═══════════════════════════════════════════════════════════════════════════════
+// FANTAZMA NETWORK — MONGODB MASTER INITIALIZATION SCRIPT
+// Run this ONCE to create all 7 collections + indexes + sample data
+// Command: node config/mongodb-init.js
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const { MongoClient } = require('mongodb');
+require('dotenv').config();
+
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+    console.error('❌ MONGODB_URI not found in .env file');
+    console.log('📝 Create a .env file with: MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/fantazma_network');
+    process.exit(1);
+}
+
+const dbName = 'fantazma_network';
+
+async function initializeDatabase() {
+    const client = new MongoClient(uri);
+    
+    try {
+        await client.connect();
+        console.log('✅ Connected to MongoDB');
+        console.log('🙏 Initializing Fantazma Network database...');
+        console.log('');
+        
+        const db = client.db(dbName);
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 1: Create collections
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('📦 Step 1/8: Creating collections...');
+        
+        const collections = [
+            'channels',
+            'endpoints', 
+            'users',
+            'analytics',
+            'epg',
+            'syncJobs',
+            'donations'
+        ];
+        
+        for (const coll of collections) {
+            try {
+                await db.createCollection(coll);
+                console.log(`   ✅ Created collection: ${coll}`);
+            } catch (err) {
+                if (err.codeName === 'NamespaceExists') {
+                    console.log(`   ⚠️  Collection already exists: ${coll}`);
+                } else {
+                    throw err;
+                }
+            }
+        }
+        
+        // Convert analytics to time-series (MongoDB 5.0+)
+        try {
+            await db.createCollection('analytics_ts', {
+                timeseries: {
+                    timeField: 'timestamp',
+                    metaField: 'type',
+                    granularity: 'minutes'
+                }
+            });
+            console.log('   ✅ Created time-series collection: analytics_ts');
+        } catch (err) {
+            console.log('   ⚠️  Time-series not supported or already exists');
+        }
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 2: Create indexes for channels
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('');
+        console.log('📇 Step 2/8: Creating indexes for channels...');
+        
+        await db.collection('channels').createIndex({ 'tier': 1, 'position': 1 });
+        await db.collection('channels').createIndex({ 'slug': 1 }, { unique: true });
+        await db.collection('channels').createIndex({ 'tags': 1 });
+        await db.collection('channels').createIndex({ 'isActive': 1, 'isPremium': 1 });
+        
+        console.log('   ✅ channels indexes created');
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 3: Create indexes for endpoints
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('');
+        console.log('📇 Step 3/8: Creating indexes for endpoints...');
+        
+        await db.collection('endpoints').createIndex({ 'channelId': 1, 'health.status': 1 });
+        await db.collection('endpoints').createIndex({ 'source.url': 1 });
+        await db.collection('endpoints').createIndex({ 'dedup.contentHash': 1 });
+        await db.collection('endpoints').createIndex({ 'dedup.normalizedUrl': 1 });
+        await db.collection('endpoints').createIndex({ 'health.status': 1, 'health.consecutiveFailures': 1 });
+        await db.collection('endpoints').createIndex({ 'sync.platform': 1, 'sync.platformChannelId': 1 });
+        await db.collection('endpoints').createIndex({ 'geo.allowedCountries': 1 });
+        await db.collection('endpoints').createIndex({ 'content.language': 1 });
+        
+        console.log('   ✅ endpoints indexes created');
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 4: Create indexes for users
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('');
+        console.log('📇 Step 4/8: Creating indexes for users...');
+        
+        await db.collection('users').createIndex({ 'email': 1 }, { unique: true });
+        await db.collection('users').createIndex({ 'username': 1 }, { unique: true });
+        await db.collection('users').createIndex({ 'auth.metaMaskAddress': 1 }, { sparse: true });
+        await db.collection('users').createIndex({ 'aoc.walletAddress': 1 }, { sparse: true });
+        await db.collection('users').createIndex({ 'aoc.tier': 1 });
+        await db.collection('users').createIndex({ 'campaign.referralCode': 1 });
+        await db.collection('users').createIndex({ 'watchHistory.endpointId': 1 });
+        await db.collection('users').createIndex({ 'favorites.channelId': 1 });
+        
+        console.log('   ✅ users indexes created');
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 5: Create indexes for analytics
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('');
+        console.log('📇 Step 5/8: Creating indexes for analytics...');
+        
+        await db.collection('analytics').createIndex({ 'timestamp': 1, 'type': 1 });
+        await db.collection('analytics').createIndex({ 'timestamp': 1, 'channelId': 1 });
+        await db.collection('analytics').createIndex({ 'timestamp': 1, 'endpointId': 1 });
+        
+        console.log('   ✅ analytics indexes created');
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 6: Create indexes for epg
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('');
+        console.log('📇 Step 6/8: Creating indexes for epg...');
+        
+        await db.collection('epg').createIndex({ 'endpointId': 1, 'program.startTime': 1 });
+        await db.collection('epg').createIndex({ 'channelId': 1, 'program.startTime': 1 });
+        
+        console.log('   ✅ epg indexes created');
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 7: Create indexes for syncJobs and donations
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('');
+        console.log('📇 Step 7/8: Creating indexes for syncJobs and donations...');
+        
+        await db.collection('syncJobs').createIndex({ 'platform': 1, 'status': 1 });
+        await db.collection('syncJobs').createIndex({ 'schedule.nextRun': 1 });
+        await db.collection('syncJobs').createIndex({ 'target.channelId': 1 });
+        
+        await db.collection('donations').createIndex({ 'userId': 1, 'createdAt': -1 });
+        await db.collection('donations').createIndex({ 'payment.txHash': 1 }, { sparse: true });
+        await db.collection('donations').createIndex({ 'compliance.fecReported': 1 });
+        
+        console.log('   ✅ syncJobs indexes created');
+        console.log('   ✅ donations indexes created');
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // STEP 8: Insert sample data
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('');
+        console.log('🌱 Step 8/8: Inserting sample data...');
+        
+        // Insert sample channels (Tier 1: Core)
+        const channelsCount = await db.collection('channels').countDocuments();
+        if (channelsCount === 0) {
+            await db.collection('channels').insertMany([
+                {
+                    channelId: "CH-001",
+                    tier: 1,
+                    name: "News & Current Events",
+                    slug: "news-current-events",
+                    description: "Live news feeds, political coverage, breaking news worldwide",
+                    icon: "fa-newspaper",
+                    color: "#FF3333",
+                    position: 1,
+                    isActive: true,
+                    isPremium: false,
+                    aocUnlockAmount: 0,
+                    tags: ["news", "politics", "breaking"],
+                    stats: {
+                        totalEndpoints: 85,
+                        activeViewers: 5234,
+                        totalViews: 2100000,
+                        avgWatchTime: 1800,
+                        uptime: 99.9
+                    },
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                },
+                {
+                    channelId: "CH-002",
+                    tier: 1,
+                    name: "Politics & Governance",
+                    slug: "politics-governance",
+                    description: "Campaign coverage, policy discussions, debates, and government proceedings",
+                    icon: "fa-landmark",
+                    color: "#0066CC",
+                    position: 2,
+                    isActive: true,
+                    isPremium: false,
+                    aocUnlockAmount: 0,
+                    tags: ["politics", "government", "campaign", "foster2028"],
+                    stats: {
+                        totalEndpoints: 62,
+                        activeViewers: 3456,
+                        totalViews: 890000,
+                        avgWatchTime: 2400,
+                        uptime: 99.7
+                    },
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                },
+                {
+                    channelId: "CH-003",
+                    tier: 1,
+                    name: "Faith & Spirituality",
+                    slug: "faith-spirituality",
+                    description: "24/7 prayer rooms, worship streams, Bible study, and spiritual teachings",
+                    icon: "fa-pray",
+                    color: "#D4AF37",
+                    position: 3,
+                    isActive: true,
+                    isPremium: false,
+                    aocUnlockAmount: 0,
+                    tags: ["faith", "prayer", "worship", "christian", "bible"],
+                    stats: {
+                        totalEndpoints: 45,
+                        activeViewers: 1284,
+                        totalViews: 456000,
+                        avgWatchTime: 4200,
+                        uptime: 99.9
+                    },
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                },
+                {
+                    channelId: "CH-004",
+                    tier: 1,
+                    name: "Sacred Geometry & Esoteric",
+                    slug: "sacred-geometry-esoteric",
+                    description: "Documentaries, frequency studies, ancient wisdom, and divine mathematics",
+                    icon: "fa-shapes",
+                    color: "#9933FF",
+                    position: 4,
+                    isActive: true,
+                    isPremium: false,
+                    aocUnlockAmount: 0,
+                    tags: ["sacred-geometry", "frequency", "ancient", "esoteric"],
+                    stats: {
+                        totalEndpoints: 28,
+                        activeViewers: 892,
+                        totalViews: 234000,
+                        avgWatchTime: 3600,
+                        uptime: 99.8
+                    },
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                },
+                {
+                    channelId: "CH-005",
+                    tier: 1,
+                    name: "Crypto & DeFi Education",
+                    slug: "crypto-defi-education",
+                    description: "AOC tutorials, blockchain basics, Web3 guides, and DeFi strategies",
+                    icon: "fa-bitcoin",
+                    color: "#FF9900",
+                    position: 5,
+                    isActive: true,
+                    isPremium: false,
+                    aocUnlockAmount: 0,
+                    tags: ["crypto", "defi", "blockchain", "aoc", "web3"],
+                    stats: {
+                        totalEndpoints: 35,
+                        activeViewers: 2100,
+                        totalViews: 567000,
+                        avgWatchTime: 2800,
+                        uptime: 99.6
+                    },
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                },
+                {
+                    channelId: "CH-046",
+                    tier: 3,
+                    name: "Foster 2028 Campaign",
+                    slug: "foster-2028-campaign",
+                    description: "Rally footage, speeches, policy announcements, and campaign updates",
+                    icon: "fa-flag",
+                    color: "#FF00E5",
+                    position: 46,
+                    isActive: true,
+                    isPremium: false,
+                    aocUnlockAmount: 0,
+                    tags: ["campaign", "foster2028", "politics", "election"],
+                    stats: {
+                        totalEndpoints: 12,
+                        activeViewers: 3420,
+                        totalViews: 128000,
+                        avgWatchTime: 3200,
+                        uptime: 99.9
+                    },
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                },
+                {
+                    channelId: "CH-058",
+                    tier: 3,
+                    name: "AOC Token Updates",
+                    slug: "aoc-token-updates",
+                    description: "Price alerts, burn events, staking rewards, and token news",
+                    icon: "fa-coins",
+                    color: "#D4AF37",
+                    position: 58,
+                    isActive: true,
+                    isPremium: false,
+                    aocUnlockAmount: 0,
+                    tags: ["aoc", "crypto", "token", "defi"],
+                    stats: {
+                        totalEndpoints: 8,
+                        activeViewers: 1567,
+                        totalViews: 89000,
+                        avgWatchTime: 1800,
+                        uptime: 99.9
+                    },
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                }
+            ]);
+            console.log('   ✅ Inserted 7 sample channels');
+        } else {
+            console.log(`   ⚠️  ${channelsCount} channels already exist, skipping sample data`);
+        }
+        
+        // Insert sample endpoints
+        const endpointsCount = await db.collection('endpoints').countDocuments();
+        if (endpointsCount === 0) {
+            await db.collection('endpoints').insertMany([
+                {
+                    endpointId: "EP-0001",
+                    channelId: "CH-003",
+                    channelSlug: "faith-spirituality",
+                    source: {
+                        type: "m3u8",
+                        url: "https://example-cdn.com/faith/live.m3u8",
+                        backupUrl: "https://backup-cdn.com/faith/live.m3u8",
+                        protocol: "https",
+                        port: 443,
+                        authRequired: false,
+                        authToken: null
+                    },
+                    content: {
+                        title: "Live Prayer Room - 24/7 Intercession",
+                        description: "Continuous prayer and worship with global community",
+                        language: "en",
+                        languages: ["en", "es"],
+                        resolution: "1080p",
+                        bitrate: 4500000,
+                        codec: "h264",
+                        audioCodec: "aac",
+                        frameRate: 30,
+                        duration: 0,
+                        isLive: true,
+                        isVOD: false,
+                        thumbnail: "https://cdn.fantazma.network/thumbs/faith-prayer.jpg",
+                        epgId: "EPG-001"
+                    },
+                    variants: [
+                        { resolution: "1080p", bitrate: 4500000, url: "https://example-cdn.com/faith/1080p.m3u8" },
+                        { resolution: "720p", bitrate: 2500000, url: "https://example-cdn.com/faith/720p.m3u8" },
+                        { resolution: "480p", bitrate: 1200000, url: "https://example-cdn.com/faith/480p.m3u8" }
+                    ],
+                    health: {
+                        status: "online",
+                        lastChecked: new Date(),
+                        lastSuccessfulStream: new Date(),
+                        uptimePercent: 99.7,
+                        avgLatency: 120,
+                        bufferRatio: 0.8,
+                        errorCount: 2,
+                        consecutiveFailures: 0,
+                        responseTime: 145
+                    },
+                    dedup: {
+                        contentHash: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+                        normalizedUrl: "example-cdn.com/faith/live",
+                        isDuplicate: false,
+                        masterEndpointId: null,
+                        qualityGroup: "faith-prayer-hd"
+                    },
+                    geo: {
+                        allowedCountries: ["US", "CA", "UK", "AU"],
+                        blockedCountries: [],
+                        region: "north-america",
+                        cdnEdge: "us-east-1"
+                    },
+                    sync: {
+                        platform: "youtube",
+                        platformChannelId: "UCfaith123456",
+                        platformStreamId: "live_stream_001",
+                        lastSync: new Date(),
+                        syncInterval: 300,
+                        isAutoSync: true
+                    },
+                    analytics: {
+                        currentViewers: 342,
+                        peakViewers: 892,
+                        totalViews: 128000,
+                        avgWatchTime: 3600,
+                        uniqueIPs: 156,
+                        countries: { "US": 89, "CA": 23, "UK": 15, "DE": 12 },
+                        devices: { "mobile": 45, "desktop": 38, "tv": 17 }
+                    },
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                }
+            ]);
+            console.log('   ✅ Inserted 1 sample endpoint');
+        } else {
+            console.log(`   ⚠️  ${endpointsCount} endpoints already exist, skipping sample data`);
+        }
+        
+        // Insert sample analytics
+        const analyticsCount = await db.collection('analytics').countDocuments();
+        if (analyticsCount === 0) {
+            await db.collection('analytics').insertOne({
+                timestamp: new Date(),
+                type: "global",
+                global: {
+                    totalViewers: 45231,
+                    peakViewers: 89102,
+                    totalChannels: 58,
+                    activeChannels: 52,
+                    totalEndpoints: 1450,
+                    onlineEndpoints: 1389,
+                    uniqueFeeds: 8120,
+                    cacheHitRate: 87.3,
+                    avgResponseTime: 145,
+                    bandwidth: 4500000000
+                },
+                aoc: {
+                    priceUSD: 0.0045,
+                    marketCap: 4500000,
+                    volume24h: 125000,
+                    holders: 8920,
+                    transactions24h: 3420,
+                    burned24h: 5000,
+                    stakedTotal: 2500000
+                },
+                geo: {
+                    countries: {
+                        "US": { viewers: 23450, bandwidth: 2300000000 },
+                        "CA": { viewers: 4520, bandwidth: 450000000 },
+                        "UK": { viewers: 3210, bandwidth: 320000000 },
+                        "DE": { viewers: 2100, bandwidth: 210000000 },
+                        "AU": { viewers: 1890, bandwidth: 180000000 }
+                    },
+                    topCities: ["New York", "Los Angeles", "London", "Toronto", "Sydney"]
+                },
+                devices: {
+                    mobile: 45.2,
+                    desktop: 32.1,
+                    smartTV: 15.8,
+                    tablet: 5.5,
+                    console: 1.4
+                }
+            });
+            console.log('   ✅ Inserted sample analytics');
+        } else {
+            console.log(`   ⚠️  ${analyticsCount} analytics records already exist`);
+        }
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // DONE
+        // ═══════════════════════════════════════════════════════════════════════
+        console.log('');
+        console.log('═══════════════════════════════════════════════════════════════');
+        console.log('✅ FANTAZMA NETWORK DATABASE INITIALIZED SUCCESSFULLY!');
+        console.log('═══════════════════════════════════════════════════════════════');
+        console.log('');
+        console.log('📊 Summary:');
+        console.log(`   • Database: ${dbName}`);
+        console.log(`   • Collections: 7`);
+        console.log(`   • Indexes: 25+`);
+        console.log(`   • Sample channels: ${await db.collection('channels').countDocuments()}`);
+        console.log(`   • Sample endpoints: ${await db.collection('endpoints').countDocuments()}`);
+        console.log(`   • Analytics records: ${await db.collection('analytics').countDocuments()}`);
+        console.log('');
+        console.log('🙏 God bless this database!');
+        console.log('');
+        console.log('🚀 Next steps:');
+        console.log('   1. Start your server: npm start');
+        console.log('   2. Open dashboard: http://localhost:3000');
+        console.log('   3. API health check: http://localhost:3000/api/health');
+        console.log('');
+        
+    } catch (err) {
+        console.error('');
+        console.error('❌ INITIALIZATION FAILED:');
+        console.error(err.message);
+        console.error('');
+        console.error('💡 Troubleshooting:');
+        console.error('   • Check your MONGODB_URI in .env');
+        console.error('   • Ensure MongoDB Atlas whitelist includes your IP');
+        console.error('   • Verify MongoDB user has readWrite permissions');
+        process.exit(1);
+    } finally {
+        await client.close();
+        console.log('🔌 MongoDB connection closed');
+    }
+}
+
+// Run initialization
+initializeDatabase();
+'''
+
+with open('/mnt/agents/output/config/mongodb-init.js', 'w') as f:
+    f.write(init_js)
+
+print("✅ FILE 1/8: config/mongodb-init.js (MASTER RUNNER)")
+print(f"📁 Saved to: /mnt/agents/output/config/mongodb-init.js")
+print(f"📊 Size: {len(init_js)} characters")

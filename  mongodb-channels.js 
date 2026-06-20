@@ -1,0 +1,676 @@
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FILE 2: config/mongodb-channels.js (58 Category Definitions)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+channels_js = '''// ═══════════════════════════════════════════════════════════════════════════════
+// FANTAZMA NETWORK — CHANNELS COLLECTION SEED DATA
+// 58 channel categories with tier system
+// Run: node config/mongodb-channels.js
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const { MongoClient } = require('mongodb');
+require('dotenv').config();
+
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+    console.error('❌ MONGODB_URI not found in .env');
+    process.exit(1);
+}
+
+const dbName = 'fantazma_network';
+
+const channels = [
+    // ═══════════════════════════════════════════════════════════════════════
+    // TIER 1: CORE (Free - Always Available)
+    // ═══════════════════════════════════════════════════════════════════════
+    {
+        channelId: "CH-001", tier: 1, position: 1,
+        name: "News & Current Events", slug: "news-current-events",
+        description: "Live news feeds, political coverage, breaking news worldwide",
+        icon: "fa-newspaper", color: "#FF3333",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["news", "politics", "breaking"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 85, activeViewers: 5234, totalViews: 2100000, avgWatchTime: 1800, uptime: 99.9 }
+    },
+    {
+        channelId: "CH-002", tier: 1, position: 2,
+        name: "Politics & Governance", slug: "politics-governance",
+        description: "Campaign coverage, policy discussions, debates, government proceedings",
+        icon: "fa-landmark", color: "#0066CC",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["politics", "government", "campaign", "foster2028"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 62, activeViewers: 3456, totalViews: 890000, avgWatchTime: 2400, uptime: 99.7 }
+    },
+    {
+        channelId: "CH-003", tier: 1, position: 3,
+        name: "Faith & Spirituality", slug: "faith-spirituality",
+        description: "24/7 prayer rooms, worship streams, Bible study, spiritual teachings",
+        icon: "fa-pray", color: "#D4AF37",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["faith", "prayer", "worship", "christian", "bible"],
+        category: "faith", language: "en",
+        stats: { totalEndpoints: 45, activeViewers: 1284, totalViews: 456000, avgWatchTime: 4200, uptime: 99.9 }
+    },
+    {
+        channelId: "CH-004", tier: 1, position: 4,
+        name: "Sacred Geometry & Esoteric", slug: "sacred-geometry-esoteric",
+        description: "Documentaries, frequency studies, ancient wisdom, divine mathematics",
+        icon: "fa-shapes", color: "#9933FF",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["sacred-geometry", "frequency", "ancient", "esoteric"],
+        category: "education", language: "en",
+        stats: { totalEndpoints: 28, activeViewers: 892, totalViews: 234000, avgWatchTime: 3600, uptime: 99.8 }
+    },
+    {
+        channelId: "CH-005", tier: 1, position: 5,
+        name: "Crypto & DeFi Education", slug: "crypto-defi-education",
+        description: "AOC tutorials, blockchain basics, Web3 guides, DeFi strategies",
+        icon: "fa-bitcoin", color: "#FF9900",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["crypto", "defi", "blockchain", "aoc", "web3"],
+        category: "education", language: "en",
+        stats: { totalEndpoints: 35, activeViewers: 2100, totalViews: 567000, avgWatchTime: 2800, uptime: 99.6 }
+    },
+    {
+        channelId: "CH-006", tier: 1, position: 6,
+        name: "Health & Wellness", slug: "health-wellness",
+        description: "Fitness, nutrition, mental health, holistic healing practices",
+        icon: "fa-heartbeat", color: "#00CC66",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["health", "fitness", "wellness", "nutrition"],
+        category: "lifestyle", language: "en",
+        stats: { totalEndpoints: 38, activeViewers: 1876, totalViews: 345000, avgWatchTime: 2200, uptime: 99.5 }
+    },
+    {
+        channelId: "CH-007", tier: 1, position: 7,
+        name: "Education & Learning", slug: "education-learning",
+        description: "Academic lectures, skill-building, language learning, tutorials",
+        icon: "fa-graduation-cap", color: "#3366FF",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["education", "learning", "academic", "tutorial"],
+        category: "education", language: "en",
+        stats: { totalEndpoints: 42, activeViewers: 2345, totalViews: 678000, avgWatchTime: 3000, uptime: 99.7 }
+    },
+    {
+        channelId: "CH-008", tier: 1, position: 8,
+        name: "Music & Performance", slug: "music-performance",
+        description: "Live concerts, music videos, artist interviews, studio sessions",
+        icon: "fa-music", color: "#FF0066",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["music", "concert", "performance", "artist"],
+        category: "entertainment", language: "en",
+        stats: { totalEndpoints: 55, activeViewers: 4567, totalViews: 1230000, avgWatchTime: 2400, uptime: 99.8 }
+    },
+    {
+        channelId: "CH-009", tier: 1, position: 9,
+        name: "Gaming & Esports", slug: "gaming-esports",
+        description: "Live gameplay, tournaments, reviews, walkthroughs, esports events",
+        icon: "fa-gamepad", color: "#00FFCC",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["gaming", "esports", "tournament", "walkthrough"],
+        category: "entertainment", language: "en",
+        stats: { totalEndpoints: 48, activeViewers: 6789, totalViews: 1890000, avgWatchTime: 3200, uptime: 99.6 }
+    },
+    {
+        channelId: "CH-010", tier: 1, position: 10,
+        name: "Technology & Innovation", slug: "technology-innovation",
+        description: "Tech news, gadget reviews, AI developments, startup showcases",
+        icon: "fa-microchip", color: "#00FFFF",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["technology", "innovation", "ai", "startup"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 32, activeViewers: 2134, totalViews: 456000, avgWatchTime: 2600, uptime: 99.7 }
+    },
+    // ═══════════════════════════════════════════════════════════════════════
+    // TIER 2: EXPANDED (Free with Registration)
+    // ═══════════════════════════════════════════════════════════════════════
+    {
+        channelId: "CH-011", tier: 2, position: 11,
+        name: "Movies & Cinema", slug: "movies-cinema",
+        description: "Classic films, indie movies, film festivals, director interviews",
+        icon: "fa-film", color: "#CC0066",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["movies", "cinema", "film", "indie"],
+        category: "entertainment", language: "en",
+        stats: { totalEndpoints: 28, activeViewers: 3456, totalViews: 890000, avgWatchTime: 5400, uptime: 99.5 }
+    },
+    {
+        channelId: "CH-012", tier: 2, position: 12,
+        name: "Documentaries", slug: "documentaries",
+        description: "Nature, history, science, true crime, biographical documentaries",
+        icon: "fa-video", color: "#6633CC",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["documentary", "nature", "history", "science"],
+        category: "education", language: "en",
+        stats: { totalEndpoints: 35, activeViewers: 2345, totalViews: 567000, avgWatchTime: 4800, uptime: 99.8 }
+    },
+    {
+        channelId: "CH-013", tier: 2, position: 13,
+        name: "Sports Live", slug: "sports-live",
+        description: "Live sports events, highlights, analysis, commentary",
+        icon: "fa-futbol", color: "#33CC33",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["sports", "live", "highlights", "analysis"],
+        category: "sports", language: "en",
+        stats: { totalEndpoints: 52, activeViewers: 8912, totalViews: 2340000, avgWatchTime: 3600, uptime: 99.6 }
+    },
+    {
+        channelId: "CH-014", tier: 2, position: 14,
+        name: "Comedy & Entertainment", slug: "comedy-entertainment",
+        description: "Stand-up comedy, sketches, pranks, entertainment shows",
+        icon: "fa-laugh", color: "#FFCC00",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["comedy", "stand-up", "entertainment", "funny"],
+        category: "entertainment", language: "en",
+        stats: { totalEndpoints: 25, activeViewers: 1876, totalViews: 345000, avgWatchTime: 1800, uptime: 99.5 }
+    },
+    {
+        channelId: "CH-015", tier: 2, position: 15,
+        name: "Travel & Adventure", slug: "travel-adventure",
+        description: "Travel vlogs, destination guides, adventure sports, cultural exploration",
+        icon: "fa-plane", color: "#0099CC",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["travel", "adventure", "culture", "destination"],
+        category: "lifestyle", language: "en",
+        stats: { totalEndpoints: 22, activeViewers: 1234, totalViews: 234000, avgWatchTime: 2400, uptime: 99.7 }
+    },
+    {
+        channelId: "CH-016", tier: 2, position: 16,
+        name: "Food & Cooking", slug: "food-cooking",
+        description: "Cooking shows, recipes, food culture, restaurant reviews",
+        icon: "fa-utensils", color: "#FF6633",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["food", "cooking", "recipe", "restaurant"],
+        category: "lifestyle", language: "en",
+        stats: { totalEndpoints: 30, activeViewers: 2345, totalViews: 456000, avgWatchTime: 2100, uptime: 99.6 }
+    },
+    {
+        channelId: "CH-017", tier: 2, position: 17,
+        name: "Science & Space", slug: "science-space",
+        description: "Space exploration, physics, astronomy, scientific breakthroughs",
+        icon: "fa-rocket", color: "#3300CC",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["science", "space", "astronomy", "physics"],
+        category: "education", language: "en",
+        stats: { totalEndpoints: 20, activeViewers: 1567, totalViews: 345000, avgWatchTime: 3600, uptime: 99.8 }
+    },
+    {
+        channelId: "CH-018", tier: 2, position: 18,
+        name: "Business & Finance", slug: "business-finance",
+        description: "Market analysis, investing, entrepreneurship, economic news",
+        icon: "fa-chart-line", color: "#006633",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["business", "finance", "investing", "economy"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 28, activeViewers: 2134, totalViews: 567000, avgWatchTime: 2400, uptime: 99.7 }
+    },
+    {
+        channelId: "CH-019", tier: 2, position: 19,
+        name: "Art & Culture", slug: "art-culture",
+        description: "Visual arts, theater, dance, cultural heritage, museum tours",
+        icon: "fa-palette", color: "#CC33FF",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["art", "culture", "theater", "museum"],
+        category: "lifestyle", language: "en",
+        stats: { totalEndpoints: 18, activeViewers: 876, totalViews: 123000, avgWatchTime: 1800, uptime: 99.5 }
+    },
+    {
+        channelId: "CH-020", tier: 2, position: 20,
+        name: "Kids & Family", slug: "kids-family",
+        description: "Children's programming, family shows, educational content for kids",
+        icon: "fa-child", color: "#FF66CC",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["kids", "family", "children", "educational"],
+        category: "entertainment", language: "en",
+        stats: { totalEndpoints: 25, activeViewers: 3456, totalViews: 789000, avgWatchTime: 1500, uptime: 99.9 }
+    },
+    // ═══════════════════════════════════════════════════════════════════════
+    // TIER 3: PREMIUM (AOC Token Holders / Subscribers)
+    // ═══════════════════════════════════════════════════════════════════════
+    {
+        channelId: "CH-021", tier: 3, position: 21,
+        name: "Premium Movies", slug: "premium-movies",
+        description: "Latest releases, exclusive premieres, director's cuts, 4K cinema",
+        icon: "fa-star", color: "#FFD700",
+        isActive: true, isPremium: true, aocUnlockAmount: 100,
+        tags: ["premium", "movies", "4k", "exclusive"],
+        category: "entertainment", language: "en",
+        stats: { totalEndpoints: 15, activeViewers: 2345, totalViews: 456000, avgWatchTime: 7200, uptime: 99.8 }
+    },
+    {
+        channelId: "CH-022", tier: 3, position: 22,
+        name: "Live Concerts", slug: "live-concerts",
+        description: "Front-row concert experiences, backstage access, music festivals",
+        icon: "fa-guitar", color: "#FF1493",
+        isActive: true, isPremium: true, aocUnlockAmount: 100,
+        tags: ["premium", "concert", "live", "music"],
+        category: "entertainment", language: "en",
+        stats: { totalEndpoints: 12, activeViewers: 1567, totalViews: 234000, avgWatchTime: 5400, uptime: 99.7 }
+    },
+    {
+        channelId: "CH-023", tier: 3, position: 23,
+        name: "Premium Sports", slug: "premium-sports",
+        description: "Pay-per-view events, exclusive matches, multi-angle coverage",
+        icon: "fa-trophy", color: "#C0C0C0",
+        isActive: true, isPremium: true, aocUnlockAmount: 100,
+        tags: ["premium", "sports", "ppv", "exclusive"],
+        category: "sports", language: "en",
+        stats: { totalEndpoints: 18, activeViewers: 4567, totalViews: 890000, avgWatchTime: 4200, uptime: 99.6 }
+    },
+    {
+        channelId: "CH-024", tier: 3, position: 24,
+        name: "Exclusive Documentaries", slug: "exclusive-documentaries",
+        description: "Original productions, investigative journalism, limited series",
+        icon: "fa-award", color: "#4169E1",
+        isActive: true, isPremium: true, aocUnlockAmount: 100,
+        tags: ["premium", "documentary", "original", "exclusive"],
+        category: "education", language: "en",
+        stats: { totalEndpoints: 10, activeViewers: 876, totalViews: 123000, avgWatchTime: 6000, uptime: 99.9 }
+    },
+    {
+        channelId: "CH-025", tier: 3, position: 25,
+        name: "Adult Animation", slug: "adult-animation",
+        description: "Mature animated series, anime, adult cartoons, animation festivals",
+        icon: "fa-dragon", color: "#8B008B",
+        isActive: true, isPremium: true, aocUnlockAmount: 100,
+        tags: ["premium", "animation", "anime", "mature"],
+        category: "entertainment", language: "en",
+        stats: { totalEndpoints: 14, activeViewers: 2134, totalViews: 345000, avgWatchTime: 1800, uptime: 99.5 }
+    },
+    {
+        channelId: "CH-026", tier: 3, position: 26,
+        name: "International News", slug: "international-news",
+        description: "Global perspectives, foreign language news, international affairs",
+        icon: "fa-globe", color: "#1E90FF",
+        isActive: true, isPremium: true, aocUnlockAmount: 100,
+        tags: ["premium", "news", "international", "global"],
+        category: "information", language: "multi",
+        stats: { totalEndpoints: 22, activeViewers: 1876, totalViews: 456000, avgWatchTime: 2400, uptime: 99.7 }
+    },
+    {
+        channelId: "CH-027", tier: 3, position: 27,
+        name: "Premium Gaming", slug: "premium-gaming",
+        description: "Early access gameplay, developer interviews, exclusive beta content",
+        icon: "fa-vr-cardboard", color: "#9400D3",
+        isActive: true, isPremium: true, aocUnlockAmount: 100,
+        tags: ["premium", "gaming", "exclusive", "beta"],
+        category: "entertainment", language: "en",
+        stats: { totalEndpoints: 12, activeViewers: 1567, totalViews: 234000, avgWatchTime: 3000, uptime: 99.6 }
+    },
+    {
+        channelId: "CH-028", tier: 3, position: 28,
+        name: "Lifestyle Premium", slug: "lifestyle-premium",
+        description: "Luxury living, fashion weeks, exclusive events, celebrity lifestyle",
+        icon: "fa-gem", color: "#00CED1",
+        isActive: true, isPremium: true, aocUnlockAmount: 100,
+        tags: ["premium", "lifestyle", "luxury", "fashion"],
+        category: "lifestyle", language: "en",
+        stats: { totalEndpoints: 10, activeViewers: 1234, totalViews: 123000, avgWatchTime: 1500, uptime: 99.5 }
+    },
+    {
+        channelId: "CH-029", tier: 3, position: 29,
+        name: "Educational Premium", slug: "educational-premium",
+        description: "University lectures, professional courses, certification programs",
+        icon: "fa-university", color: "#2E8B57",
+        isActive: true, isPremium: true, aocUnlockAmount: 100,
+        tags: ["premium", "education", "university", "certification"],
+        category: "education", language: "en",
+        stats: { totalEndpoints: 16, activeViewers: 2345, totalViews: 345000, avgWatchTime: 4800, uptime: 99.8 }
+    },
+    {
+        channelId: "CH-030", tier: 3, position: 30,
+        name: "Health Premium", slug: "health-premium",
+        description: "Medical conferences, specialist talks, wellness retreats, therapy sessions",
+        icon: "fa-user-md", color: "#20B2AA",
+        isActive: true, isPremium: true, aocUnlockAmount: 100,
+        tags: ["premium", "health", "medical", "wellness"],
+        category: "lifestyle", language: "en",
+        stats: { totalEndpoints: 8, activeViewers: 876, totalViews: 89000, avgWatchTime: 3600, uptime: 99.7 }
+    },
+    // ═══════════════════════════════════════════════════════════════════════
+    // TIER 4: SPECIALTY (Niche Content)
+    // ═══════════════════════════════════════════════════════════════════════
+    {
+        channelId: "CH-031", tier: 4, position: 31,
+        name: "Astrology & Numerology", slug: "astrology-numerology",
+        description: "Daily horoscopes, birth chart readings, numerology sessions, planetary alignments",
+        icon: "fa-star-half-alt", color: "#4B0082",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["astrology", "numerology", "horoscope", "planetary"],
+        category: "faith", language: "en",
+        stats: { totalEndpoints: 12, activeViewers: 567, totalViews: 89000, avgWatchTime: 2400, uptime: 99.5 }
+    },
+    {
+        channelId: "CH-032", tier: 4, position: 32,
+        name: "Reiki & Energy Healing", slug: "reiki-energy-healing",
+        description: "Reiki sessions, chakra balancing, energy work, meditation guides",
+        icon: "fa-hands", color: "#9370DB",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["reiki", "energy", "healing", "chakra", "meditation"],
+        category: "faith", language: "en",
+        stats: { totalEndpoints: 8, activeViewers: 345, totalViews: 56000, avgWatchTime: 3600, uptime: 99.8 }
+    },
+    {
+        channelId: "CH-033", tier: 4, position: 33,
+        name: "Ancient Civilizations", slug: "ancient-civilizations",
+        description: "Archaeological discoveries, ancient history, lost civilizations, mythology",
+        icon: "fa-monument", color: "#8B4513",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["ancient", "history", "archaeology", "mythology"],
+        category: "education", language: "en",
+        stats: { totalEndpoints: 10, activeViewers: 456, totalViews: 78000, avgWatchTime: 4200, uptime: 99.7 }
+    },
+    {
+        channelId: "CH-034", tier: 4, position: 34,
+        name: "Conspiracy & Mystery", slug: "conspiracy-mystery",
+        description: "Unsolved mysteries, conspiracy theories, paranormal investigations, UFOs",
+        icon: "fa-eye", color: "#2F4F4F",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["conspiracy", "mystery", "paranormal", "ufo"],
+        category: "entertainment", language: "en",
+        stats: { totalEndpoints: 14, activeViewers: 1234, totalViews: 234000, avgWatchTime: 2400, uptime: 99.5 }
+    },
+    {
+        channelId: "CH-035", tier: 4, position: 35,
+        name: "Survival & Prepping", slug: "survival-prepping",
+        description: "Survival skills, emergency preparedness, off-grid living, bushcraft",
+        icon: "fa-campground", color: "#556B2F",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["survival", "prepping", "off-grid", "bushcraft"],
+        category: "lifestyle", language: "en",
+        stats: { totalEndpoints: 9, activeViewers: 678, totalViews: 123000, avgWatchTime: 3000, uptime: 99.6 }
+    },
+    {
+        channelId: "CH-036", tier: 4, position: 36,
+        name: "Homesteading", slug: "homesteading",
+        description: "Farming, gardening, livestock, food preservation, sustainable living",
+        icon: "fa-seedling", color: "#228B22",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["homesteading", "farming", "gardening", "sustainable"],
+        category: "lifestyle", language: "en",
+        stats: { totalEndpoints: 11, activeViewers: 567, totalViews: 89000, avgWatchTime: 2400, uptime: 99.7 }
+    },
+    {
+        channelId: "CH-037", tier: 4, position: 37,
+        name: "DIY & Crafts", slug: "diy-crafts",
+        description: "Woodworking, metalworking, crafting, home improvement, maker projects",
+        icon: "fa-tools", color: "#CD853F",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["diy", "crafts", "woodworking", "maker"],
+        category: "lifestyle", language: "en",
+        stats: { totalEndpoints: 13, activeViewers: 456, totalViews: 67000, avgWatchTime: 1800, uptime: 99.5 }
+    },
+    {
+        channelId: "CH-038", tier: 4, position: 38,
+        name: "Automotive", slug: "automotive",
+        description: "Car reviews, restoration projects, racing, mechanic tutorials, auto shows",
+        icon: "fa-car", color: "#DC143C",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["automotive", "cars", "racing", "restoration"],
+        category: "lifestyle", language: "en",
+        stats: { totalEndpoints: 15, activeViewers: 1234, totalViews: 234000, avgWatchTime: 2100, uptime: 99.6 }
+    },
+    {
+        channelId: "CH-039", tier: 4, position: 39,
+        name: "Pets & Animals", slug: "pets-animals",
+        description: "Pet care, wildlife, animal rescue, veterinary advice, nature cams",
+        icon: "fa-paw", color: "#FF6347",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["pets", "animals", "wildlife", "nature"],
+        category: "lifestyle", language: "en",
+        stats: { totalEndpoints: 12, activeViewers: 876, totalViews: 123000, avgWatchTime: 1500, uptime: 99.8 }
+    },
+    {
+        channelId: "CH-040", tier: 4, position: 40,
+        name: "Real Estate & Property", slug: "real-estate-property",
+        description: "Property tours, investment advice, market analysis, home staging",
+        icon: "fa-home", color: "#4682B4",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["real-estate", "property", "investment", "home"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 8, activeViewers: 345, totalViews: 56000, avgWatchTime: 1800, uptime: 99.5 }
+    },
+    // ═══════════════════════════════════════════════════════════════════════
+    // TIER 5: EXCLUSIVE (VIP / Diamond Tier AOC Holders)
+    // ═══════════════════════════════════════════════════════════════════════
+    {
+        channelId: "CH-041", tier: 5, position: 41,
+        name: "VIP Events", slug: "vip-events",
+        description: "Exclusive galas, private concerts, celebrity meet-and-greets, red carpet",
+        icon: "fa-crown", color: "#FFD700",
+        isActive: true, isPremium: true, aocUnlockAmount: 500,
+        tags: ["vip", "exclusive", "events", "celebrity"],
+        category: "entertainment", language: "en",
+        stats: { totalEndpoints: 5, activeViewers: 234, totalViews: 12000, avgWatchTime: 3600, uptime: 99.9 }
+    },
+    {
+        channelId: "CH-042", tier: 5, position: 42,
+        name: "Executive Briefings", slug: "executive-briefings",
+        description: "Board meetings, investor calls, strategic planning, corporate governance",
+        icon: "fa-briefcase", color: "#191970",
+        isActive: true, isPremium: true, aocUnlockAmount: 500,
+        tags: ["vip", "executive", "business", "corporate"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 4, activeViewers: 123, totalViews: 8000, avgWatchTime: 5400, uptime: 99.9 }
+    },
+    {
+        channelId: "CH-043", tier: 5, position: 43,
+        name: "Private Security", slug: "private-security",
+        description: "Security briefings, threat analysis, protective services, tactical training",
+        icon: "fa-shield-alt", color: "#000000",
+        isActive: true, isPremium: true, aocUnlockAmount: 500,
+        tags: ["vip", "security", "tactical", "private"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 3, activeViewers: 67, totalViews: 4000, avgWatchTime: 4200, uptime: 99.9 }
+    },
+    {
+        channelId: "CH-044", tier: 5, position: 44,
+        name: "Luxury Travel", slug: "luxury-travel",
+        description: "Private jet tours, yacht reviews, luxury resorts, exclusive destinations",
+        icon: "fa-plane-departure", color: "#B8860B",
+        isActive: true, isPremium: true, aocUnlockAmount: 500,
+        tags: ["vip", "luxury", "travel", "exclusive"],
+        category: "lifestyle", language: "en",
+        stats: { totalEndpoints: 4, activeViewers: 156, totalViews: 15000, avgWatchTime: 2400, uptime: 99.8 }
+    },
+    {
+        channelId: "CH-045", tier: 5, position: 45,
+        name: "Rare Collectibles", slug: "rare-collectibles",
+        description: "Auctions, appraisals, collecting guides, rare item showcases, art deals",
+        icon: "fa-gavel", color: "#8B0000",
+        isActive: true, isPremium: true, aocUnlockAmount: 500,
+        tags: ["vip", "collectibles", "auction", "rare"],
+        category: "lifestyle", language: "en",
+        stats: { totalEndpoints: 3, activeViewers: 89, totalViews: 7000, avgWatchTime: 1800, uptime: 99.7 }
+    },
+    // ═══════════════════════════════════════════════════════════════════════
+    // TIER 6: CAMPAIGN (Foster 2028 Specific)
+    // ═══════════════════════════════════════════════════════════════════════
+    {
+        channelId: "CH-046", tier: 3, position: 46,
+        name: "Foster 2028 Campaign", slug: "foster-2028-campaign",
+        description: "Rally footage, speeches, policy announcements, campaign updates",
+        icon: "fa-flag", color: "#FF00E5",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["campaign", "foster2028", "politics", "election"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 12, activeViewers: 3420, totalViews: 128000, avgWatchTime: 3200, uptime: 99.9 }
+    },
+    {
+        channelId: "CH-047", tier: 3, position: 47,
+        name: "Campaign Town Halls", slug: "campaign-town-halls",
+        description: "Live Q&A sessions, community forums, voter outreach, town hall meetings",
+        icon: "fa-comments", color: "#FF4500",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["campaign", "foster2028", "town-hall", "community"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 8, activeViewers: 1234, totalViews: 56000, avgWatchTime: 3600, uptime: 99.8 }
+    },
+    {
+        channelId: "CH-048", tier: 3, position: 48,
+        name: "Policy Deep Dives", slug: "policy-deep-dives",
+        description: "Detailed policy explanations, expert panels, legislative analysis",
+        icon: "fa-balance-scale", color: "#4169E1",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["campaign", "foster2028", "policy", "legislation"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 6, activeViewers: 876, totalViews: 34000, avgWatchTime: 4800, uptime: 99.7 }
+    },
+    {
+        channelId: "CH-049", tier: 3, position: 49,
+        name: "Volunteer Network", slug: "volunteer-network",
+        description: "Training sessions, volunteer coordination, grassroots organizing, canvassing",
+        icon: "fa-hands-helping", color: "#32CD32",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["campaign", "foster2028", "volunteer", "grassroots"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 5, activeViewers: 567, totalViews: 23000, avgWatchTime: 2400, uptime: 99.6 }
+    },
+    {
+        channelId: "CH-050", tier: 3, position: 50,
+        name: "Campaign Finance", slug: "campaign-finance",
+        description: "Donation transparency, FEC filings, fundraising events, donor updates",
+        icon: "fa-donate", color: "#228B22",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["campaign", "foster2028", "finance", "donations"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 4, activeViewers: 234, totalViews: 12000, avgWatchTime: 1800, uptime: 99.9 }
+    },
+    // ═══════════════════════════════════════════════════════════════════════
+    // TIER 7: AOC ECOSYSTEM (Token-Integrated)
+    // ═══════════════════════════════════════════════════════════════════════
+    {
+        channelId: "CH-051", tier: 3, position: 51,
+        name: "AOC Trading Floor", slug: "aoc-trading-floor",
+        description: "Live price action, trading signals, market sentiment, whale alerts",
+        icon: "fa-chart-bar", color: "#D4AF37",
+        isActive: true, isPremium: true, aocUnlockAmount: 50,
+        tags: ["aoc", "trading", "crypto", "market"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 6, activeViewers: 1234, totalViews: 56000, avgWatchTime: 2400, uptime: 99.7 }
+    },
+    {
+        channelId: "CH-052", tier: 3, position: 52,
+        name: "Staking & Yield", slug: "staking-yield",
+        description: "Staking tutorials, yield farming, APY comparisons, reward calculators",
+        icon: "fa-coins", color: "#FFD700",
+        isActive: true, isPremium: true, aocUnlockAmount: 50,
+        tags: ["aoc", "staking", "yield", "defi"],
+        category: "education", language: "en",
+        stats: { totalEndpoints: 5, activeViewers: 876, totalViews: 34000, avgWatchTime: 3000, uptime: 99.8 }
+    },
+    {
+        channelId: "CH-053", tier: 3, position: 53,
+        name: "AOC Governance", slug: "aoc-governance",
+        description: "DAO proposals, voting sessions, community decisions, protocol updates",
+        icon: "fa-vote-yea", color: "#9370DB",
+        isActive: true, isPremium: true, aocUnlockAmount: 100,
+        tags: ["aoc", "governance", "dao", "voting"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 4, activeViewers: 456, totalViews: 18000, avgWatchTime: 3600, uptime: 99.9 }
+    },
+    {
+        channelId: "CH-054", tier: 3, position: 54,
+        name: "Burn Events", slug: "burn-events",
+        description: "Live token burns, supply updates, deflation metrics, burn ceremonies",
+        icon: "fa-fire", color: "#FF4500",
+        isActive: true, isPremium: true, aocUnlockAmount: 50,
+        tags: ["aoc", "burn", "deflation", "supply"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 3, activeViewers: 567, totalViews: 23000, avgWatchTime: 1200, uptime: 99.8 }
+    },
+    {
+        channelId: "CH-055", tier: 3, position: 55,
+        name: "AOC Developer", slug: "aoc-developer",
+        description: "Smart contract updates, API docs, developer tutorials, GitHub commits",
+        icon: "fa-code", color: "#00FF7F",
+        isActive: true, isPremium: true, aocUnlockAmount: 50,
+        tags: ["aoc", "developer", "code", "api"],
+        category: "education", language: "en",
+        stats: { totalEndpoints: 4, activeViewers: 234, totalViews: 12000, avgWatchTime: 4200, uptime: 99.6 }
+    },
+    {
+        channelId: "CH-056", tier: 3, position: 56,
+        name: "NFT Gallery", slug: "nft-gallery",
+        description: "AOC NFT showcases, artist spotlights, minting events, gallery tours",
+        icon: "fa-image", color: "#FF69B4",
+        isActive: true, isPremium: true, aocUnlockAmount: 100,
+        tags: ["aoc", "nft", "gallery", "art"],
+        category: "entertainment", language: "en",
+        stats: { totalEndpoints: 5, activeViewers: 345, totalViews: 15000, avgWatchTime: 1800, uptime: 99.7 }
+    },
+    {
+        channelId: "CH-057", tier: 3, position: 57,
+        name: "AOC Community", slug: "aoc-community",
+        description: "Community calls, AMA sessions, fan content, meme streams, social hour",
+        icon: "fa-users", color: "#1E90FF",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["aoc", "community", "social", "ama"],
+        category: "entertainment", language: "en",
+        stats: { totalEndpoints: 7, activeViewers: 1234, totalViews: 56000, avgWatchTime: 1500, uptime: 99.5 }
+    },
+    {
+        channelId: "CH-058", tier: 3, position: 58,
+        name: "AOC Token Updates", slug: "aoc-token-updates",
+        description: "Price alerts, burn events, staking rewards, token news",
+        icon: "fa-bell", color: "#D4AF37",
+        isActive: true, isPremium: false, aocUnlockAmount: 0,
+        tags: ["aoc", "crypto", "token", "defi"],
+        category: "information", language: "en",
+        stats: { totalEndpoints: 8, activeViewers: 1567, totalViews: 89000, avgWatchTime: 1800, uptime: 99.9 }
+    }
+];
+
+async function seedChannels() {
+    const client = new MongoClient(uri);
+    
+    try {
+        await client.connect();
+        console.log('✅ Connected to MongoDB');
+        
+        const db = client.db(dbName);
+        const collection = db.collection('channels');
+        
+        // Clear existing and insert fresh
+        await collection.deleteMany({});
+        console.log('🗑️  Cleared existing channels');
+        
+        const result = await collection.insertMany(channels);
+        console.log(`✅ Inserted ${result.insertedCount} channels`);
+        
+        // Show summary by tier
+        const tiers = await collection.aggregate([
+            { $group: { _id: '$tier', count: { $sum: 1 }, names: { $push: '$name' } } },
+            { $sort: { _id: 1 } }
+        ]).toArray();
+        
+        console.log('');
+        console.log('📊 CHANNELS BY TIER:');
+        const tierNames = { 1: 'CORE (Free)', 2: 'EXPANDED (Free+Reg)', 3: 'PREMIUM (AOC)', 4: 'SPECIALTY (Niche)', 5: 'EXCLUSIVE (VIP)' };
+        for (const t of tiers) {
+            console.log(`   Tier ${t._id} — ${tierNames[t._id] || 'Other'}: ${t.count} channels`);
+        }
+        
+        console.log('');
+        console.log('🙏 God bless Fantazma Network!');
+        
+    } catch (err) {
+        console.error('❌ ERROR:', err.message);
+    } finally {
+        await client.close();
+        console.log('🔌 Connection closed');
+    }
+}
+
+seedChannels();
+'''
+
+with open('/mnt/agents/output/config/mongodb-channels.js', 'w') as f:
+    f.write(channels_js)
+
+print("✅ FILE 2/8: config/mongodb-channels.js (58 Categories)")
+print(f"📁 Saved to: /mnt/agents/output/config/mongodb-channels.js")
+print(f"📊 Size: {len(channels_js)} characters")

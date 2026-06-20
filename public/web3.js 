@@ -1,0 +1,161 @@
+
+web3_js_final = '''// ═══════════════════════════════════════════════════════════════════════════════
+// FANTAZMA NETWORK — WEB3 AOC INTEGRATION (FRONTEND JAVASCRIPT)
+// Place in: public/web3.js
+// This is JAVASCRIPT — runs in the browser, connects to MetaMask
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const AOC_CONFIG = {
+    contractAddress: "0x4A662A2f4614BE5d9eB82592207be12F159b1101",
+    tokenDecimals: 18,
+    stakingAPY: 5.2,
+    tiers: [
+        { level: 1, name: "Bronze", minAOC: 0, benefits: ["Basic Access"] },
+        { level: 2, name: "Silver", minAOC: 1000, benefits: ["Basic Access", "Ad-Free"] },
+        { level: 3, name: "Gold", minAOC: 10000, benefits: ["Basic Access", "Ad-Free", "Premium Channels"] },
+        { level: 4, name: "Platinum", minAOC: 25000, benefits: ["Basic Access", "Ad-Free", "Premium Channels", "Governance Voting"] },
+        { level: 5, name: "Diamond", minAOC: 50000, benefits: ["Basic Access", "Ad-Free", "Premium Channels", "Governance Voting", "VIP Events"] }
+    ]
+};
+
+// Minimal ERC-20 ABI (only functions we need for reading)
+const ERC20_ABI = [
+    "function name() view returns (string)",
+    "function symbol() view returns (string)",
+    "function decimals() view returns (uint8)",
+    "function totalSupply() view returns (uint256)",
+    "function balanceOf(address) view returns (uint256)",
+    "function transfer(address, uint256) returns (bool)",
+    "function allowance(address, address) view returns (uint256)",
+    "function approve(address, uint256) returns (bool)",
+    "event Transfer(address indexed from, address indexed to, uint256 value)"
+];
+
+class AOCWeb3Manager {
+    constructor() {
+        this.web3 = null;
+        this.provider = null;
+        this.account = null;
+        this.contract = null;
+        this.chainId = null;
+        this.isConnected = false;
+        this.balance = 0;
+        this.stakedBalance = 0;
+        this.rewards = 0;
+        this.tier = 1;
+        this.tierName = "Bronze";
+        this.listeners = [];
+        this.init();
+    }
+
+    init() {
+        if (typeof window.ethereum !== 'undefined') {
+            this.provider = window.ethereum;
+            this.web3 = new Web3(this.provider);
+            
+            this.provider.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) this.disconnect();
+                else { this.account = accounts[0]; this.refreshData(); }
+            });
+            
+            this.provider.on('chainChanged', () => window.location.reload());
+            console.log('✅ Web3 initialized — MetaMask detected');
+        } else {
+            console.warn('⚠️ MetaMask not detected');
+        }
+    }
+
+    async connect() {
+        if (!this.provider) { alert('Please install MetaMask'); return false; }
+        try {
+            const accounts = await this.provider.request({ method: 'eth_requestAccounts' });
+            this.account = accounts[0];
+            const chainIdHex = await this.provider.request({ method: 'eth_chainId' });
+            this.chainId = parseInt(chainIdHex, 16);
+            this.contract = new this.web3.eth.Contract(ERC20_ABI, AOC_CONFIG.contractAddress);
+            this.isConnected = true;
+            await this.refreshData();
+            console.log('✅ Connected:', this.shortenAddress(this.account));
+            return true;
+        } catch (err) {
+            console.error('❌ Connection failed:', err.message);
+            return false;
+        }
+    }
+
+    disconnect() {
+        this.account = null; this.contract = null; this.isConnected = false;
+        this.balance = 0; this.stakedBalance = 0; this.rewards = 0;
+        this.tier = 1; this.tierName = "Bronze";
+        this.updateUI();
+    }
+
+    async refreshData() {
+        if (!this.isConnected || !this.contract) return;
+        try {
+            const balanceWei = await this.contract.methods.balanceOf(this.account).call();
+            this.balance = parseFloat(this.web3.utils.fromWei(balanceWei, 'ether'));
+            this.tier = this.calculateTierFromBalance(this.balance);
+            this.tierName = AOC_CONFIG.tiers[this.tier - 1]?.name || "Bronze";
+            this.updateUI();
+        } catch (err) {
+            console.error('❌ Data refresh failed:', err.message);
+            this.tier = this.calculateTierFromBalance(this.balance);
+            this.tierName = AOC_CONFIG.tiers[this.tier - 1]?.name || "Bronze";
+        }
+    }
+
+    calculateTierFromBalance(balance) {
+        for (let i = AOC_CONFIG.tiers.length - 1; i >= 0; i--) {
+            if (balance >= AOC_CONFIG.tiers[i].minAOC) return AOC_CONFIG.tiers[i].level;
+        }
+        return 1;
+    }
+
+    shortenAddress(addr) { return addr ? addr.slice(0,6) + '...' + addr.slice(-4) : ''; }
+    formatAOC(amount) { return amount.toLocaleString('en-US', {maximumFractionDigits: 2}); }
+    formatUSD(amount, price=0.0045) { return '$' + (amount * price).toFixed(2); }
+
+    getTierProgress() {
+        const current = AOC_CONFIG.tiers[this.tier - 1];
+        const next = AOC_CONFIG.tiers[this.tier];
+        if (!next) return { percent: 100, needed: 0 };
+        const needed = next.minAOC - this.balance;
+        const progress = this.balance - current.minAOC;
+        const total = next.minAOC - current.minAOC;
+        return { percent: Math.min(100, (progress/total)*100), needed };
+    }
+
+    updateUI() {
+        window.dispatchEvent(new CustomEvent('aocDataUpdated', {
+            detail: {
+                isConnected: this.isConnected,
+                account: this.account,
+                shortAddress: this.shortenAddress(this.account),
+                balance: this.balance,
+                stakedBalance: this.stakedBalance,
+                rewards: this.rewards,
+                tier: this.tier,
+                tierName: this.tierName,
+                tierProgress: this.getTierProgress(),
+                chainId: this.chainId,
+                config: AOC_CONFIG
+            }
+        }));
+    }
+
+    on(event, cb) { this.listeners.push({event, cb}); }
+    emit(event, data) { this.listeners.filter(l=>l.event===event).forEach(l=>l.cb(data)); }
+}
+
+// Create global instance
+const aocWeb3 = new AOCWeb3Manager();
+window.aocWeb3 = aocWeb3;
+console.log('🙏 AOC Web3 Manager loaded — God bless Fantazma Network!');
+'''
+
+with open('/mnt/agents/output/public_web3.js', 'w') as f:
+    f.write(web3_js_final)
+
+print(f"✅ public/web3.js (JavaScript) — {len(web3_js_final)} chars")
+print("📁 Download: [public/web3.js](sandbox:///mnt/agents/output/public_web3.js)")

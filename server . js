@@ -1,0 +1,191 @@
+/* ═══════════════════════════════════════════════════════════════
+   FANTAZMA NETWORK — BACKEND API v2.0
+   Express + WebSocket for Render deployment
+   ═══════════════════════════════════════════════════════════════ */
+
+const express = require('express');
+const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const path = require('path');
+const http = require('http');
+require('dotenv').config();
+
+const ChatServer = require('./websocket-server');
+
+const app = express();
+const server = http.createServer(app);
+const PORT = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || 'fantazma-secret-key-change-in-production';
+
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+const users = [
+    {
+        id: '1',
+        email: 'david_j_foster2211@yahoo.com',
+        password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+        name: 'David J. Foster',
+        initials: 'DF',
+        tier: 'High Priest',
+        subscription: 'yearly',
+        createdAt: '2024-01-15T00:00:00Z'
+    }
+];
+const refreshTokens = new Set();
+
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Access token required' });
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ error: 'Invalid or expired token' });
+        req.user = user;
+        next();
+    });
+};
+
+app.post('/api/auth/register', async (req, res) => {
+    try {
+        const { email, password, name } = req.body;
+        if (!email || !password || !name) return res.status(400).json({ error: 'Email, password, and name required' });
+        if (users.find(u => u.email === email)) return res.status(409).json({ error: 'User already exists' });
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = { id: Date.now().toString(), email, password: hashedPassword, name, initials: name.split(' ').map(n => n[0]).join('').toUpperCase(), tier: 'Member', subscription: 'monthly', createdAt: new Date().toISOString() };
+        users.push(newUser);
+        const token = jwt.sign({ userId: newUser.id, email: newUser.email, tier: newUser.tier }, JWT_SECRET, { expiresIn: '24h' });
+        const refreshToken = jwt.sign({ userId: newUser.id }, JWT_SECRET, { expiresIn: '7d' });
+        refreshTokens.add(refreshToken);
+        res.status(201).json({ token, refreshToken, user: { id: newUser.id, email: newUser.email, name: newUser.name, initials: newUser.initials, tier: newUser.tier, subscription: newUser.subscription } });
+    } catch (err) { res.status(500).json({ error: 'Registration failed' }); }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+        const user = users.find(u => u.email === email);
+        if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) return res.status(401).json({ error: 'Invalid credentials' });
+        const token = jwt.sign({ userId: user.id, email: user.email, tier: user.tier }, JWT_SECRET, { expiresIn: '24h' });
+        const refreshToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+        refreshTokens.add(refreshToken);
+        res.json({ token, refreshToken, user: { id: user.id, email: user.email, name: user.name, initials: user.initials, tier: user.tier, subscription: user.subscription } });
+    } catch (err) { res.status(500).json({ error: 'Login failed' }); }
+});
+
+app.post('/api/auth/refresh', (req, res) => {
+    const { refreshToken } = req.body;
+    if (!refreshToken || !refreshTokens.has(refreshToken)) return res.status(403).json({ error: 'Invalid refresh token' });
+    jwt.verify(refreshToken, JWT_SECRET, (err, decoded) => {
+        if (err) return res.status(403).json({ error: 'Expired refresh token' });
+        const user = users.find(u => u.id === decoded.userId);
+        if (!user) return res.status(403).json({ error: 'User not found' });
+        const token = jwt.sign({ userId: user.id, email: user.email, tier: user.tier }, JWT_SECRET, { expiresIn: '24h' });
+        res.json({ token });
+    });
+});
+
+app.post('/api/auth/logout', authenticateToken, (req, res) => {
+    const { refreshToken } = req.body;
+    refreshTokens.delete(refreshToken);
+    res.json({ message: 'Logged out successfully' });
+});
+
+app.get('/api/auth/me', authenticateToken, (req, res) => {
+    const user = users.find(u => u.id === req.user.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ id: user.id, email: user.email, name: user.name, initials: user.initials, tier: user.tier, subscription: user.subscription });
+});
+
+app.get('/api/channels', (req, res) => {
+    res.json([
+        { id: 'writing-room', title: 'The Writing Room', desc: 'Live scriptwriting with David J. Foster', icon: 'fa-pen-fancy', live: true, viewers: 1247, streamUrl: '/api/stream/writing-room', chatRoom: 'writing-room', category: 'live', color: 'linear-gradient(135deg, #00d4ff, #0099cc)' },
+        { id: 'after-dark', title: 'Fantazma After Dark', desc: 'Unfiltered commentary. Raw. Real.', icon: 'fa-moon', live: false, schedule: '8:00 PM EST', streamUrl: '/api/stream/after-dark', chatRoom: 'after-dark', category: 'live', color: 'linear-gradient(135deg, #a855f7, #6366f1)' },
+        { id: 'nexus-stream', title: 'NEXUS Frequency Stream', desc: '285 Hz Solfeggio + Theta Sync', icon: 'fa-wave-square', live: true, viewers: 89, streamUrl: '/api/stream/nexus', chatRoom: 'nexus', category: 'live', color: 'linear-gradient(135deg, #22c55e, #16a34a)' },
+        { id: 'maine-stories', title: 'Maine Stories', desc: 'Uniquely Maine. Unfiltered.', icon: 'fa-mountain-sun', live: false, streamUrl: '/api/stream/maine-stories', category: 'archive', color: 'linear-gradient(135deg, #f59e0b, #d97706)' },
+        { id: 'crypto-corner', title: 'Crypto Corner', desc: 'Bitcoin, markets, and the future', icon: 'fa-bitcoin', live: false, streamUrl: '/api/stream/crypto-corner', category: 'archive', color: 'linear-gradient(135deg, #f7931a, #e67e22)' },
+        { id: 'ministry-hour', title: 'The Ministry Hour', desc: 'Servant / High Priest teachings', icon: 'fa-cross', live: false, streamUrl: '/api/stream/ministry-hour', category: 'archive', color: 'linear-gradient(135deg, #ffd700, #b8860b)' }
+    ]);
+});
+
+app.get('/api/archive', (req, res) => {
+    res.json([
+        { id: 'sunberry', title: 'Sunberry — The Full Story', type: 'film', duration: '1:45:00', progress: 0, thumbnail: 'fa-apple-alt', videoUrl: '/api/videos/sunberry' },
+        { id: 'lilith-1', title: 'The Lilith Arc: Episode 1', type: 'series', duration: '45:00', progress: 65, thumbnail: 'fa-mask', videoUrl: '/api/videos/lilith-1' },
+        { id: 'nexxus-doc', title: 'NEXXUS Protocol Explained', type: 'doc', duration: '32:15', progress: 30, thumbnail: 'fa-brain', videoUrl: '/api/videos/nexxus-doc' },
+        { id: 'maine-winter', title: 'Maine Winter Sessions', type: 'podcast', duration: '1:12:00', progress: 0, thumbnail: 'fa-snowflake', videoUrl: '/api/videos/maine-winter' },
+        { id: 'ordination', title: 'Ordination & Purpose', type: 'doc', duration: '58:00', progress: 100, thumbnail: 'fa-hands-praying', videoUrl: '/api/videos/ordination' },
+        { id: '432-guide', title: 'The 432 Hz Frequency Guide', type: 'podcast', duration: '2:00:00', progress: 15, thumbnail: 'fa-music', videoUrl: '/api/videos/432-guide' },
+    ]);
+});
+
+app.get('/api/channels/:channelId/episodes', (req, res) => {
+    const { channelId } = req.params;
+    if (channelId === 'writing-room') {
+        res.json([
+            { num: 1, title: 'Pilot Episode — Genesis', duration: '2:34:12', date: '2024-08-20', videoUrl: '/api/videos/writing-ep1' },
+            { num: 2, title: 'Character Arcs & Redemption', duration: '1:58:44', date: '2024-08-21', videoUrl: '/api/videos/writing-ep2' },
+            { num: 3, title: 'The Lilith Principle', duration: '2:12:08', date: '2024-08-22', videoUrl: '/api/videos/writing-ep3' },
+        ]);
+    } else { res.json([]); }
+});
+
+app.get('/api/stream/:channelId', authenticateToken, (req, res) => {
+    const { channelId } = req.params;
+    res.json({ channelId, streamUrl: `https://stream.fantazma.network/${channelId}/playlist.m3u8`, type: 'hls', quality: ['1080p', '720p', '480p'], drm: false });
+});
+
+app.get('/api/videos/:videoId', authenticateToken, (req, res) => {
+    const { videoId } = req.params;
+    res.json({ videoId, url: `/videos/${videoId}.mp4`, poster: `/posters/${videoId}.jpg`, duration: 'TBD' });
+});
+
+app.get('/api/chat/:roomId/history', authenticateToken, (req, res) => {
+    res.json([
+        { user: 'system', text: 'Welcome to the live chat. Be respectful.', timestamp: Date.now() },
+        { user: 'CryptoKing', text: 'This is incredible content!', timestamp: Date.now() - 5000 },
+        { user: 'MaineWriter', text: 'The frequency is hitting different tonight', timestamp: Date.now() - 10000 },
+    ]);
+});
+
+app.get('/api/wallet', authenticateToken, (req, res) => {
+    res.json({
+        balances: [
+            { asset: 'BTC', balance: '0.0420', fiat: '$2,831.64', address: 'bc1q...x7k2' },
+            { asset: 'ETH', balance: '1.337', fiat: '$4,012.50', address: '0x71...9f3a' },
+            { asset: 'USDC', balance: '500.00', fiat: '$500.00', address: '0x71...9f3a' }
+        ],
+        transactions: [
+            { type: 'in', asset: 'BTC', amount: '0.0100', fiat: '$671.50', from: 'Subscription Payment', date: '2024-08-20' },
+            { type: 'out', asset: 'ETH', amount: '0.0500', fiat: '$150.00', to: 'Server Hosting', date: '2024-08-18' },
+            { type: 'in', asset: 'USDC', amount: '49.99', fiat: '$49.99', from: 'Monthly Renewal', date: '2024-08-15' },
+        ]
+    });
+});
+
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'dashboard', 'dashboard.html'));
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something went wrong!' });
+});
+
+server.listen(PORT, () => {
+    console.log(`🚀 Fantazma Network API running on port ${PORT}`);
+    console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
+});
+
+const chatServer = new ChatServer(server);
+console.log('💬 WebSocket chat server initialized');
+
+module.exports = app;

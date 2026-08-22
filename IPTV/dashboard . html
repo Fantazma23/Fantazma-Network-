@@ -1,0 +1,43 @@
+<a href="#" class="nav-item" data-view="iptv"><i class="fas fa-satellite-dish"></i><span>IPTV</span></a>
+<div class="view" id="view-iptv">
+    <h2 class="page-title"><i class="fas fa-satellite-dish"></i> IPTV Network</h2>
+    <div class="iptv-hero">
+        <div class="iptv-info">
+            <h3>Fantazma IPTV</h3>
+            <p>Stream all Fantazma channels on any device. Compatible with VLC, Kodi, Plex, TiviMate, and any M3U player.</p>
+            <div class="iptv-actions">
+                <button class="btn-glow" onclick="downloadIPTV('m3u')"><i class="fas fa-download"></i> Download M3U Playlist</button>
+                <button class="btn-secondary" onclick="downloadIPTV('epg')"><i class="fas fa-calendar-alt"></i> Download EPG</button>
+                <button class="btn-secondary" onclick="copyIPTVUrl()"><i class="fas fa-link"></i> Copy Playlist URL</button>
+            </div>
+            <div class="iptv-url-box"><code id="iptv-url">https://fantazma-network.onrender.com/api/iptv/playlist.m3u</code></div>
+        </div>
+        <div class="iptv-qr"><div class="qr-placeholder"><i class="fas fa-qrcode"></i><span>Scan to load on mobile</span></div></div>
+    </div>
+    <div class="iptv-player-area">
+        <h3 class="section-title"><i class="fas fa-play-circle"></i> Web Player</h3>
+        <div class="iptv-web-player" id="iptv-web-player"><div class="iptv-player-placeholder"><i class="fas fa-tv"></i><p>Select a channel to watch in-browser</p></div></div>
+    </div>
+    <div class="iptv-channels-section">
+        <h3 class="section-title"><i class="fas fa-list"></i> Channel List</h3>
+        <div class="iptv-filters">
+            <button class="filter-btn active" data-iptv-filter="all">All Channels</button>
+            <button class="filter-btn" data-iptv-filter="Fantazma Originals">Fantazma</button>
+            <button class="filter-btn" data-iptv-filter="News">News</button>
+            <button class="filter-btn" data-iptv-filter="Music">Music</button>
+            <button class="filter-btn" data-iptv-filter="Education">Education</button>
+        </div>
+        <div class="iptv-channel-grid" id="iptv-channel-grid"></div>
+    </div>
+    <div class="iptv-setup">
+        <h3 class="section-title"><i class="fas fa-cogs"></i> Setup Guides</h3>
+        <div class="setup-grid">
+            <div class="setup-card"><i class="fas fa-mobile-alt"></i><h4>iPhone / iPad</h4><p>1. Download <strong>VLC</strong> or <strong>IPTV Smarters</strong><br>2. Add network stream<br>3. Paste your M3U URL</p></div>
+            <div class="setup-card"><i class="fab fa-android"></i><h4>Android</h4><p>1. Install <strong>TiviMate</strong> or <strong>IPTV Extreme</strong><br>2. Add playlist via URL<br>3. Enter your Fantazma M3U link</p></div>
+            <div class="setup-card"><i class="fas fa-desktop"></i><h4>Windows / Mac</h4><p>1. Open <strong>VLC Media Player</strong><br>2. Media → Open Network Stream<br>3. Paste M3U URL and play</p></div>
+            <div class="setup-card"><i class="fas fa-tv"></i><h4>Smart TV / Fire Stick</h4><p>1. Install <strong>Smart IPTV</strong> or <strong>SS IPTV</strong><br>2. Enter MAC address on their site<br>3. Upload your M3U playlist</p></div>
+            <div class="setup-card"><i class="fas fa-cube"></i><h4>Kodi</h4><p>1. Install <strong>IPTV Simple Client</strong><br>2. Configure with M3U URL<br>3. Add EPG URL for guide</p></div>
+            <div class="setup-card"><i class="fas fa-server"></i><h4>Plex</h4><p>1. Install <strong>xTeVe</strong> or <strong>Tautulli</strong><br>2. Add Fantazma M3U as tuner<br>3. Map channels in Plex DVR</p></div>
+        </div>
+    </div>
+</div>

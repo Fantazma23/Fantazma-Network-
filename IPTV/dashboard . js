@@ -1,0 +1,68 @@
+// ─── IPTV FUNCTIONS ───
+let iptvChannels = [];
+async function loadIPTVChannels() {
+    if (CONFIG.demoMode) {
+        iptvChannels = [
+            { id: 'iptv-writing-room', name: 'The Writing Room', group: 'Fantazma Originals', logo: '', live: true },
+            { id: 'iptv-after-dark', name: 'Fantazma After Dark', group: 'Fantazma Originals', logo: '', live: false },
+            { id: 'iptv-nexus', name: 'NEXUS Frequency Stream', group: 'Fantazma Originals', logo: '', live: true },
+            { id: 'iptv-ministry', name: 'The Ministry Hour', group: 'Fantazma Originals', logo: '', live: false },
+            { id: 'iptv-bloomberg', name: 'Bloomberg TV', group: 'News', logo: '', live: true },
+            { id: 'iptv-nasa', name: 'NASA TV', group: 'Education', logo: '', live: true },
+        ];
+    } else {
+        try { iptvChannels = await API.request('/iptv/channels'); }
+        catch (err) { console.error('Failed to load IPTV channels:', err); showToast('Failed to load IPTV channels', 'error'); return; }
+    }
+    renderIPTVChannels('all');
+}
+function renderIPTVChannels(filter) {
+    const grid = document.getElementById('iptv-channel-grid');
+    if (!grid) return;
+    const filtered = filter === 'all' ? iptvChannels : iptvChannels.filter(ch => ch.group === filter);
+    grid.innerHTML = filtered.map(ch => `
+        <div class="iptv-channel-card" onclick="playIPTV('${ch.id}', '${ch.name}')">
+            <div class="iptv-channel-logo">${ch.logo ? `<img src="${ch.logo}" alt="${ch.name}">` : `<i class="fas fa-tv"></i>`}</div>
+            <div class="iptv-channel-info"><h4>${ch.name}</h4><span>${ch.group} ${ch.live ? '• <span style="color:var(--live)">LIVE</span>' : ''}</span></div>
+            <button class="iptv-channel-play"><i class="fas fa-play"></i></button>
+        </div>
+    `).join('');
+}
+function playIPTV(channelId, channelName) {
+    const isFantazma = channelId.startsWith('iptv-') && !['bloomberg','nasa','abc','lofi'].some(x => channelId.includes(x));
+    if (isFantazma) { playMedia(channelId.replace('iptv-', ''), channelName); return; }
+    showToast(`Loading ${channelName}...`, 'info');
+}
+function downloadIPTV(format) {
+    if (CONFIG.demoMode) { generateDemoM3U(); return; }
+    const token = localStorage.getItem(CONFIG.sessionKey);
+    const urls = { m3u: '/iptv/playlist.m3u', epg: '/iptv/epg.xml', m3u8: '/iptv/playlist.m3u8' };
+    const filenames = { m3u: 'fantazma-iptv.m3u', epg: 'fantazma-epg.xml', m3u8: 'fantazma-iptv.m3u8' };
+    const a = document.createElement('a');
+    a.href = `${CONFIG.API_BASE}${urls[format]}?token=${token}`;
+    a.download = filenames[format];
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    showToast(`${filenames[format]} downloaded!`, 'success');
+}
+function generateDemoM3U() {
+    let m3u = '#EXTM3U\n#PLAYLIST:Fantazma Network IPTV\n\n';
+    m3u += '#EXTINF:-1 tvg-name="The Writing Room" group-title="Fantazma Originals",The Writing Room\n';
+    m3u += 'https://stream.fantazma.network/writing-room/playlist.m3u8\n\n';
+    m3u += '#EXTINF:-1 tvg-name="Fantazma After Dark" group-title="Fantazma Originals",Fantazma After Dark\n';
+    m3u += 'https://stream.fantazma.network/after-dark/playlist.m3u8\n\n';
+    m3u += '#EXTINF:-1 tvg-name="NEXUS Frequency Stream" group-title="Fantazma Originals",NEXUS Frequency Stream\n';
+    m3u += 'https://stream.fantazma.network/nexus/playlist.m3u8\n\n';
+    const blob = new Blob([m3u], { type: 'application/vnd.apple.mpegurl' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'fantazma-iptv.m3u';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    showToast('fantazma-iptv.m3u downloaded!', 'success');
+}
+function copyIPTVUrl() {
+    const url = 'https://fantazma-network.onrender.com/api/iptv/playlist.m3u';
+    navigator.clipboard.writeText(url).then(() => showToast('Playlist URL copied!', 'success'));
+}
+// Also need to trigger loadIPTVChannels when view switches
+// Add this inside App.switchView():
+if (viewName === 'iptv') { setTimeout(() => loadIPTVChannels(), 100); }
+// if (viewName === 'iptv') { setTimeout(() => loadIPTVChannels(), 100); }

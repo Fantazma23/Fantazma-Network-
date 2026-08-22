@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantazma Network — Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+    <div id="auth-gate" class="auth-gate">
+        <div class="auth-box">
+            <div class="auth-logo"><i class="fas fa-infinity"></i><span>FANTAZMA</span></div>
+            <h2>Enter the Network</h2>
+            <form id="login-form">
+                <div class="input-group"><i class="fas fa-envelope"></i><input type="email" id="login-email" placeholder="Email" required></div>
+                <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="login-password" placeholder="Password" required></div>
+                <button type="submit" class="btn-glow"><i class="fas fa-fingerprint"></i> Authenticate</button>
+            </form>
+            <div class="auth-footer"><a href="#" class="forgot-link">Recover Access</a><span class="divider">|</span><a href="/" class="back-link">← Back to Site</a></div>
+        </div>
+        <div class="auth-bg-grid"></div>
+    </div>
+
+    <div id="dashboard" class="dashboard hidden">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand"><i class="fas fa-infinity"></i><span class="brand-text">FANTAZMA</span></div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-view="home"><i class="fas fa-home"></i><span>Home</span></a>
+                <a href="#" class="nav-item" data-view="live"><i class="fas fa-broadcast-tower"></i><span>Live Channels</span><span class="live-badge">LIVE</span></a>
+                <a href="#" class="nav-item" data-view="archive"><i class="fas fa-film"></i><span>Archive</span></a>
+                <a href="#" class="nav-item" data-view="writing"><i class="fas fa-pen-nib"></i><span>The Writing Room</span></a>
+                <a href="#" class="nav-item" data-view="dark"><i class="fas fa-moon"></i><span>After Dark</span></a>
+                <a href="#" class="nav-item" data-view="nexus"><i class="fas fa-wave-square"></i><span>NEXUS System</span></a>
+                <a href="#" class="nav-item" data-view="wallet"><i class="fab fa-bitcoin"></i><span>Crypto Wallet</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-card"><div class="user-avatar" id="user-avatar">DF</div><div class="user-info"><div class="user-name" id="user-name">David Foster</div><div class="user-tier" id="user-tier"><i class="fas fa-crown"></i> High Priest</div></div></div>
+                <button class="logout-btn" id="logout-btn"><i class="fas fa-power-off"></i> Disconnect</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <button class="menu-toggle" id="menu-toggle"><i class="fas fa-bars"></i></button>
+                <div class="search-box"><i class="fas fa-search"></i><input type="text" placeholder="Search content, channels, episodes..."></div>
+                <div class="top-actions">
+                    <button class="action-btn" title="Notifications"><i class="fas fa-bell"></i><span class="notif-dot"></span></button>
+                    <button class="action-btn" title="Messages"><i class="fas fa-comment-dots"></i></button>
+                    <div class="crypto-ticker"><i class="fab fa-bitcoin"></i><span id="btc-price">$67,420</span><span class="price-change up">+2.4%</span></div>
+                </div>
+            </header>
+
+            <div class="views-container">
+                <div class="view active" id="view-home">
+                    <div class="hero-banner">
+                        <div class="hero-content">
+                            <span class="hero-tag"><i class="fas fa-fire"></i> FEATURED</span>
+                            <h1>The Writing Room</h1>
+                            <p>Live scriptwriting sessions with David J. Foster. Unfiltered creative process, real-time storytelling, and the birth of new worlds.</p>
+                            <div class="hero-actions"><button class="btn-play" id="hero-play-btn"><i class="fas fa-play"></i> Watch Now</button><button class="btn-secondary"><i class="fas fa-info-circle"></i> Details</button></div>
+                        </div>
+                        <div class="hero-visual"><div class="pulse-ring"></div><div class="pulse-ring" style="animation-delay: 0.5s"></div><div class="pulse-ring" style="animation-delay: 1s"></div><i class="fas fa-pen-fancy hero-icon"></i></div>
+                    </div>
+                    <section class="content-section"><h2 class="section-title"><i class="fas fa-broadcast-tower"></i> Live Now</h2><div class="channel-grid" id="live-channels"></div></section>
+                    <section class="content-section"><h2 class="section-title"><i class="fas fa-clock-rotate-left"></i> Continue Watching</h2><div class="continue-grid" id="continue-watching"></div></section>
+                    <section class="content-section"><h2 class="section-title"><i class="fas fa-star"></i> From the Archive</h2><div class="archive-grid" id="archive-grid"></div></section>
+                </div>
+
+                <div class="view" id="view-live">
+                    <h2 class="page-title"><i class="fas fa-broadcast-tower"></i> Live Channels</h2>
+                    <div class="live-main" id="live-main"><div class="live-player-placeholder" id="live-player-placeholder"><i class="fas fa-satellite-dish"></i><p>Select a channel to begin streaming</p></div></div>
+                    <div class="channel-list-full" id="channel-list-full"></div>
+                </div>
+
+                <div class="view" id="view-archive">
+                    <h2 class="page-title"><i class="fas fa-film"></i> Content Archive</h2>
+                    <div class="filter-bar"><button class="filter-btn active" data-filter="all">All</button><button class="filter-btn" data-filter="series">Series</button><button class="filter-btn" data-filter="film">Films</button><button class="filter-btn" data-filter="podcast">Podcasts</button><button class="filter-btn" data-filter="doc">Documentary</button></div>
+                    <div class="archive-full-grid" id="archive-full"></div>
+                </div>
+
+                <div class="view" id="view-writing">
+                    <h2 class="page-title"><i class="fas fa-pen-nib"></i> The Writing Room</h2>
+                    <div class="writing-layout">
+                        <div class="writing-player-area"><div class="player-container" id="writing-player"><div class="player-overlay"><i class="fas fa-pen-fancy"></i><h3>The Writing Room</h3><p>Live scriptwriting with David J. Foster</p><button class="btn-play-large" onclick="playMedia('writing-room')"><i class="fas fa-play"></i></button></div></div></div>
+                        <div class="writing-sidebar"><div class="episode-list" id="writing-episodes"></div></div>
+                    </div>
+                </div>
+
+                <div class="view" id="view-dark">
+                    <h2 class="page-title"><i class="fas fa-moon"></i> Fantazma After Dark</h2>
+                    <div class="dark-hero"><div class="dark-visual"><i class="fas fa-moon"></i></div><div class="dark-info"><span class="schedule-badge"><i class="fas fa-clock"></i> 8:00 PM EST</span><h3>Unfiltered Commentary</h3><p>Raw. Real. No filters. The conversations they don't want you to hear.</p><button class="btn-glow" onclick="playMedia('after-dark')"><i class="fas fa-play"></i> Tune In</button></div></div>
+                </div>
+
+                <div class="view" id="view-nexus">
+                    <h2 class="page-title"><i class="fas fa-wave-square"></i> NEXUS Arousal Frequency System</h2>
+                    <div class="nexus-dashboard">
+                        <div class="nexus-panel">
+                            <h3>Frequency Generator</h3>
+                            <div class="freq-display"><span class="freq-value" id="freq-value">285</span><span class="freq-unit">Hz</span></div>
+                            <input type="range" class="freq-slider" id="freq-slider" min="40" max="1000" value="285">
+                            <div class="freq-presets"><button class="preset-btn" data-freq="285">285 Hz</button><button class="preset-btn" data-freq="432">432 Hz</button><button class="preset-btn" data-freq="528">528 Hz</button><button class="preset-btn" data-freq="741">741 Hz</button></div>
+                            <button class="btn-glow nexus-play" id="nexus-play"><i class="fas fa-play"></i> Generate Tone</button>
+                        </div>
+                        <div class="nexus-visualizer"><canvas id="nexus-canvas" width="400" height="300"></canvas></div>
+                        <div class="nexus-log"><h4>Session Log</h4><div class="log-entries" id="nexus-log"></div></div>
+                    </div>
+                </div>
+
+                <div class="view" id="view-wallet">
+                    <h2 class="page-title"><i class="fab fa-bitcoin"></i> Crypto Wallet</h2>
+                    <div class="wallet-grid">
+                        <div class="wallet-card"><div class="wallet-header"><i class="fab fa-bitcoin"></i><span>Bitcoin</span></div><div class="wallet-balance">0.0420 <span>BTC</span></div><div class="wallet-fiat">≈ $2,831.64</div><div class="wallet-address" onclick="copyAddress(this)">bc1q...x7k2 <i class="fas fa-copy"></i></div></div>
+                        <div class="wallet-card"><div class="wallet-header"><i class="fab fa-ethereum"></i><span>Ethereum</span></div><div class="wallet-balance">1.337 <span>ETH</span></div><div class="wallet-fiat">≈ $4,012.50</div><div class="wallet-address" onclick="copyAddress(this)">0x71...9f3a <i class="fas fa-copy"></i></div></div>
+                        <div class="wallet-card"><div class="wallet-header"><i class="fas fa-coins"></i><span>USDC</span></div><div class="wallet-balance">500.00 <span>USDC</span></div><div class="wallet-fiat">≈ $500.00</div><div class="wallet-address" onclick="copyAddress(this)">0x71...9f3a <i class="fas fa-copy"></i></div></div>
+                    </div>
+                    <div class="tx-history"><h3>Transaction History</h3><div class="tx-list" id="tx-list"></div></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="media-modal" id="media-modal">
+        <div class="media-overlay" onclick="closeMedia()"></div>
+        <div class="media-player-container">
+            <button class="media-close" onclick="closeMedia()"><i class="fas fa-times"></i></button>
+            <div class="media-player" id="media-player">
+                <video id="video-element" controls></video>
+                <div class="media-placeholder" id="media-placeholder"><i class="fas fa-play-circle"></i><h3 id="media-title">Select Content</h3><p id="media-desc">Choose a channel or episode to begin playback</p></div>
+            </div>
+            <div class="media-info"><h3 id="modal-title">Channel Title</h3><p id="modal-desc">Description goes here</p><div class="media-meta"><span id="modal-live-badge" class="live-pill"><i class="fas fa-circle"></i> LIVE</span><span id="modal-viewers"><i class="fas fa-eye"></i> 1,247 watching</span><span id="modal-duration"><i class="fas fa-clock"></i> 2:34:12</span></div></div>
+            <div class="media-chat" id="media-chat"><div class="chat-header"><i class="fas fa-comments"></i> Live Chat</div><div class="chat-messages" id="chat-messages"></div><div class="chat-input"><input type="text" id="chat-input-field" placeholder="Say something..."><button onclick="sendChat()"><i class="fas fa-paper-plane"></i></button></div></div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+    <script src="dashboard.js"></script>
+    <script src="media-player.js"></script>
+</body>
+</html>

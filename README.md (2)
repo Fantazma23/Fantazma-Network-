@@ -1,0 +1,68 @@
+# Fantazma Network Dashboard
+
+## Files
+- `dashboard.html` — Main dashboard page
+- `dashboard.css` — All styles (dark crypto-streaming theme)
+- `dashboard.js` — Auth, navigation, data, NEXUS frequency system
+- `media-player.js` — Modal player, live chat, stream simulation
+
+## Integration Steps
+
+### 1. Add to your Render deployment
+Upload these 4 files to your project root or `/dashboard/` directory.
+
+### 2. Update your main page login
+On your landing page (`index.html`), change the login form to redirect to:
+```
+/dashboard/dashboard.html
+```
+
+### 3. Connect real backend (when ready)
+In `dashboard.js`, update the `AuthManager.login()` method:
+```javascript
+static async login(email, password) {
+    const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (data.token) {
+        localStorage.setItem(CONFIG.sessionKey, data.token);
+        localStorage.setItem(CONFIG.userKey, JSON.stringify(data.user));
+    }
+    return data;
+}
+```
+
+### 4. Connect real video streams
+In `media-player.js`, update `playMedia()` to set actual video sources:
+```javascript
+video.src = `/api/stream/${channelId}`;
+video.classList.add('active');
+placeholder.style.display = 'none';
+video.play();
+```
+
+### 5. Features Included
+- ✅ JWT-style session auth (demo mode + real API ready)
+- ✅ Collapsible sidebar navigation (7 views)
+- ✅ Live channel grid with real-time viewer counts
+- ✅ Continue watching with progress bars
+- ✅ Content archive with category filters
+- ✅ The Writing Room with episode list
+- ✅ Fantazma After Dark schedule view
+- ✅ NEXUS Arousal Frequency System (285 Hz generator + visualizer)
+- ✅ Crypto wallet dashboard (BTC, ETH, USDC)
+- ✅ Transaction history
+- ✅ Full-screen media modal with live chat simulation
+- ✅ Toast notifications
+- ✅ Responsive design (mobile + tablet)
+- ✅ Keyboard shortcuts (ESC to close, ENTER to send chat)
+
+### 6. User Profile
+The dashboard auto-populates with your info from memory:
+- Name: David J. Foster
+- Email: david_j_foster2211@yahoo.com
+- Tier: High Priest
+- GitHub: Fantazma23
